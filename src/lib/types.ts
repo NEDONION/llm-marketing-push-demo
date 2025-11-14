@@ -6,7 +6,7 @@ export type Channel = 'PUSH' | 'EMAIL';
 export type Verdict = 'ALLOW' | 'REVISE' | 'REJECT';
 
 export interface UserProfile {
-  id: UserId;
+  id: string;
   name: string;
   tags: string[];
 }
@@ -29,7 +29,7 @@ export interface VerificationResult {
   violations: Violation[];
 }
 
-export interface PushContent {
+export interface PushContentUI {
   type: 'PUSH';
   mainText: string;
   subText?: string;
@@ -47,4 +47,4 @@ export interface EmailContent {
   verification: VerificationResult;
 }
 
-export type GeneratedContent = PushContent | EmailContent;
+export type GeneratedContent = PushContentUI | EmailContent;

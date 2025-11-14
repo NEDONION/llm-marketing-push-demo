@@ -1,8 +1,8 @@
-import type {UserProfile, UserId} from '../lib/types';
+import type {UserProfile} from '../lib/types';
 
 interface UserSwitcherProps {
-  currentUser: UserId;
-  onUserChange: (userId: UserId) => void;
+  currentUser: string;
+  onUserChange: (userId: string) => void;
   userProfiles: UserProfile[];
 }
 

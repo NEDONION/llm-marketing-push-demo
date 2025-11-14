@@ -4,6 +4,7 @@ import { llmService } from '../services/llm.service';
 import { verificationService } from '../services/verification.service';
 import { catalogService } from '../services/catalog.service';
 import { rateLimiterService } from '../services/rate-limiter.service';
+import pushGeneratorService from "../services/push-generater.service";
 
 /**
  * 消息生成控制器
@@ -69,6 +70,8 @@ export class MessageController {
         }
       });
 
+      console.log("promptResponse:" + promptResponse);
+
       // 4. 调用 LLM 生成
       const llmResponse = await llmService.instance.generate({
         prompt: promptResponse.prompt,
@@ -80,6 +83,8 @@ export class MessageController {
           maxLen
         }
       });
+
+      console.log("llmResponse:" + llmResponse);
 
       if (llmResponse.candidates.length === 0) {
         res.status(500).json({
@@ -135,6 +140,31 @@ export class MessageController {
       res.status(500).json({
         success: false,
         error: error.message || 'Generation failed'
+      });
+    }
+  }
+
+  /**
+   * 只生成 Push 消息
+   * POST /api/push/generate
+   * Body: { userId: string }
+   */
+  async generatePush(req: Request, res: Response): Promise<void> {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        res.status(400).json({ error: 'Missing required field: userId' });
+        return;
+      }
+
+      // 调用 PushGeneratorService
+      const pushContent = await pushGeneratorService.generate(userId);
+
+      res.status(200).json(pushContent);
+    } catch (error: any) {
+      console.error('generatePush error:', error);
+      res.status(500).json({
+        error: error.message || 'Failed to generate push content',
       });
     }
   }

@@ -17,6 +17,11 @@ const router = Router();
  */
 router.post('/generate', (req, res) => messageController.generate(req, res));
 
+
+/** 🔹 新增专用 Push 生成接口 */
+router.post('/push/generate', (req, res) => messageController.generatePush(req, res));
+
+
 /**
  * 验证候选内容
  * POST /api/verify

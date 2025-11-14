@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import UserSwitcher from './components/UserSwitcher';
 import ChannelPanel from './components/ChannelPanel';
-import type {UserId, UserProfile, GeneratedContent, PushContent, EmailContent} from './lib/types';
+import type {UserProfile, GeneratedContent, PushContentUI, EmailContent} from './lib/types';
+import pushGeneraterService from "../server/src/services/push-generater.service.ts";
+import type {PushContentResponse} from "../server/src/types";
 
 // Mock 数据
 const userProfiles: UserProfile[] = [
@@ -18,38 +20,38 @@ const userProfiles: UserProfile[] = [
 ];
 
 // Mock 生成内容函数
-const generateMockPushContent = (userId: UserId): PushContent => {
-  const contents: Record<UserId, PushContent> = {
-    user_001: {
-      type: 'PUSH',
-      mainText: '📷 Sigma 35/1.4 Art lens — tonight 9PM flash sale stacks with cart coupons',
-      subText: 'Perfect match for your A7C II. Free Peak Design strap bundle.',
-      cta: 'View Deal →',
-      verification: {
-        verdict: 'ALLOW',
-        scores: { fact: 0.95, compliance: 1.0, quality: 0.98 },
-        violations: []
-      }
-    },
-    user_002: {
-      type: 'PUSH',
-      mainText: '📱 iPhone 16 Pro MagSafe case + Ugreen 67W charger combo — 25% off ends midnight',
-      subText: 'Based on your recent browsing. Ships same-day.',
-      cta: 'Shop Now →',
-      verification: {
-        verdict: 'ALLOW',
-        scores: { fact: 0.92, compliance: 0.95, quality: 0.96 },
-        violations: [
-          { code: 'COMPLIANCE_EXCESSIVE_PUNCTUATION', msg: 'Too many dashes', severity: 'WARNING' }
-        ]
-      }
-    }
-  };
-  return contents[userId];
-};
+// const generateMockPushContent = (userId: string): PushContentUI => {
+//   const contents: Record<string, PushContentUI> = {
+//     user_001: {
+//       type: 'PUSH',
+//       mainText: '📷 Sigma 35/1.4 Art lens — tonight 9PM flash sale stacks with cart coupons',
+//       subText: 'Perfect match for your A7C II. Free Peak Design strap bundle.',
+//       cta: 'View Deal →',
+//       verification: {
+//         verdict: 'ALLOW',
+//         scores: { fact: 0.95, compliance: 1.0, quality: 0.98 },
+//         violations: []
+//       }
+//     },
+//     user_002: {
+//       type: 'PUSH',
+//       mainText: '📱 iPhone 16 Pro MagSafe case + Ugreen 67W charger combo — 25% off ends midnight',
+//       subText: 'Based on your recent browsing. Ships same-day.',
+//       cta: 'Shop Now →',
+//       verification: {
+//         verdict: 'ALLOW',
+//         scores: { fact: 0.92, compliance: 0.95, quality: 0.96 },
+//         violations: [
+//           { code: 'COMPLIANCE_EXCESSIVE_PUNCTUATION', msg: 'Too many dashes', severity: 'WARNING' }
+//         ]
+//       }
+//     }
+//   };
+//   return contents[userId];
+// };
 
-const generateMockEmailContent = (userId: UserId): EmailContent => {
-  const contents: Record<UserId, EmailContent> = {
+const generateMockEmailContent = (userId: string): EmailContent => {
+  const contents: Record<string, EmailContent> = {
     user_001: {
       type: 'EMAIL',
       subject: 'Your A7C II gear bundle is ready — save 15% before midnight',
@@ -91,14 +93,14 @@ const generateMockEmailContent = (userId: UserId): EmailContent => {
 };
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState<UserId>('user_001');
+  const [currentUser, setCurrentUser] = useState<string>('user_001');
   const [pushContents, setPushContents] = useState<GeneratedContent[]>([]);
   const [emailContents, setEmailContents] = useState<GeneratedContent[]>([]);
   const [pushLoading, setPushLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [showInfoBanner, setShowInfoBanner] = useState(false);
 
-  const handleUserChange = (userId: UserId) => {
+  const handleUserChange = (userId: string) => {
     setCurrentUser(userId);
     setPushContents([]);
     setEmailContents([]);
@@ -106,13 +108,37 @@ export default function App() {
     setTimeout(() => setShowInfoBanner(false), 3000);
   };
 
-  const handleGeneratePush = () => {
+  const handleGeneratePush = async () => {
     setPushLoading(true);
-    setTimeout(() => {
-      const newContent = generateMockPushContent(currentUser);
-      setPushContents([newContent]);
+    try {
+      await new Promise(r => setTimeout(r, 1500));
+
+      // 路径要和 router 对齐：POST /api/generate
+      const resp = await fetch('/api/push/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // 按你的接口注释，传 userId、channel；locale 可选（全英文可不传或传 'en-US'）
+        body: JSON.stringify({
+          userId: currentUser,
+          channel: 'PUSH',
+          // locale: 'en-US',
+          // itemIds: ['v1|itm|001'] // 如需指定
+        }),
+      });
+
+      if (!resp.ok) throw new Error(`Failed to generate: ${resp.status}`);
+      const backendContent = await resp.json();
+
+      console.log("backendContent:", backendContent);
+
+      const uiContent: PushContentUI = mapBackendToUI(backendContent);
+      setPushContents(prev => [...prev, uiContent]);
+    } catch (e) {
+      console.error(e);
+      // TODO: toast error
+    } finally {
       setPushLoading(false);
-    }, 1500);
+    }
   };
 
   const handleGenerateEmail = () => {
@@ -122,17 +148,6 @@ export default function App() {
       setEmailContents([newContent]);
       setEmailLoading(false);
     }, 1800);
-  };
-
-  const handleRegeneratePush = (index: number) => {
-    setPushLoading(true);
-    setTimeout(() => {
-      const newContent = generateMockPushContent(currentUser);
-      const updated = [...pushContents];
-      updated[index] = newContent;
-      setPushContents(updated);
-      setPushLoading(false);
-    }, 1500);
   };
 
   const handleRegenerateEmail = (index: number) => {
@@ -146,16 +161,29 @@ export default function App() {
     }, 1800);
   };
 
+  /**
+   * 将后端返回的 PushContentResponse 转成前端展示用 PushContentUI
+   */
+  function mapBackendToUI(content: PushContentResponse): PushContentUI {
+    return {
+      type: content.type,
+      mainText: content.mainText,
+      subText: content.subText,
+      cta: content.cta,
+      verification: content.verification,
+    };
+  }
+
   return (
     <main className="min-h-screen bg-slate-50">
       {/* 顶部标题区 */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 mb-2">
-            LLM Dynamic Push/Email Optimization
+            LLM Dynamic Push/Email Content Enhancement Demo
           </h1>
           <p className="text-sm text-slate-500">
-            Personalized marketing content generation with three-layer verification
+            Personalized marketing content generation with hallucination detection and validation
           </p>
         </div>
       </div>
@@ -186,7 +214,7 @@ export default function App() {
           contents={pushContents}
           loading={pushLoading}
           onGenerate={handleGeneratePush}
-          onRegenerate={handleRegeneratePush}
+          onRegenerate={handleGeneratePush}
         />
 
         {/* Email 通道面板 */}

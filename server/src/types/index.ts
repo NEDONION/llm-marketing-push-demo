@@ -210,3 +210,43 @@ export interface GenerateMessageResponse {
   verification?: VerifyResult;
   error?: string;
 }
+
+// ========== 用户与消息扩展类型 ==========
+
+export interface VerificationResult {
+  verdict: Verdict;
+  scores: {
+    fact: number;
+    compliance: number;
+    quality: number;
+  };
+  violations: Violation[];
+  autoFix?: AutoFix;
+  candidate?: Candidate;
+}
+
+/**
+ * Push 内容结构（后端版本，与前端类型兼容）
+ */
+export interface PushContentResponse {
+  type: 'PUSH';
+  mainText: string;          // 主标题内容
+  subText?: string;          // 可选的副标题（简短描述）
+  cta?: string;              // 行动按钮（Call-To-Action，例如“立即查看”）
+  imageUrl?: string;         // 展示商品图片或Banner
+  verification: VerificationResult; // 审核/验证结果
+
+  meta: {
+    model: string;
+    token?: number;
+    referenced_item_ids: string[];
+    referenced_brands: string[];
+    referenced_events: string[];
+    referenced_holiday: string | null;
+    mentioned_benefits?: string[];
+    locale: Locale;
+    channel: Channel;
+    maxLen: number;
+  };
+}
+
