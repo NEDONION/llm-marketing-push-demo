@@ -24,6 +24,18 @@ export class MessageController {
         return;
       }
 
+      // 检查限流
+      const rateLimit = rateLimiterService.checkLimit();
+      if (!rateLimit.allowed) {
+        res.status(429).json({
+          error: 'Rate limit exceeded',
+          message: `Daily limit reached. Resets at ${rateLimit.resetAt}`,
+          remaining: rateLimit.remaining,
+          resetAt: rateLimit.resetAt,
+        });
+        return;
+      }
+
       // 使用时间追踪上下文包装
       const pushContent = await initTimingContext(async () => {
         const content = await pushGeneratorService.generate(userId);
@@ -31,6 +43,9 @@ export class MessageController {
         const timing = getTimingInfo();
         return { ...content, timing };
       });
+
+      // 记录调用
+      rateLimiterService.recordCall();
 
       res.status(200).json(pushContent);
     } catch (error: any) {
@@ -54,6 +69,18 @@ export class MessageController {
         return;
       }
 
+      // 检查限流
+      const rateLimit = rateLimiterService.checkLimit();
+      if (!rateLimit.allowed) {
+        res.status(429).json({
+          error: 'Rate limit exceeded',
+          message: `Daily limit reached. Resets at ${rateLimit.resetAt}`,
+          remaining: rateLimit.remaining,
+          resetAt: rateLimit.resetAt,
+        });
+        return;
+      }
+
       // 使用时间追踪上下文包装
       const emailContent = await initTimingContext(async () => {
         const content = await emailGeneratorService.generate(userId);
@@ -61,6 +88,9 @@ export class MessageController {
         const timing = getTimingInfo();
         return { ...content, timing };
       });
+
+      // 记录调用
+      rateLimiterService.recordCall();
 
       res.status(200).json(emailContent);
     } catch (error: any) {

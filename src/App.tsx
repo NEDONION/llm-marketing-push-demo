@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import UserSwitcher from './components/UserSwitcher';
 import ChannelPanel from './components/ChannelPanel';
+import RateLimitStatus from './components/RateLimitStatus';
 import type {UserProfile, GeneratedContent, PushContentUI, EmailContentUI} from './lib/types';
 import type {EmailContentResponse, PushContentResponse} from "../server/src/types";
 
@@ -131,7 +132,7 @@ export default function App() {
       console.log("backendContent:", backendContent);
 
       const uiContent: PushContentUI = mapPushBackendToUI(backendContent);
-      setPushContents(prev => [...prev, uiContent]);
+      setPushContents([uiContent]); // 替换而不是追加
     } catch (e) {
       console.error(e);
       // TODO: toast error
@@ -164,7 +165,7 @@ export default function App() {
       console.log("backendContent:", backendContent);
 
       const uiContent: EmailContentUI = mapEmailBackendToUI(backendContent);
-      setEmailContents(prev => [...prev, uiContent]);
+      setEmailContents([uiContent]); // 替换而不是追加
     } catch (e) {
       console.error(e);
       // TODO: toast error
@@ -211,12 +212,16 @@ export default function App() {
       {/* 顶部标题区 */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 mb-2">
-            LLM Dynamic Push/Email Content Enhancement Demo
-          </h1>
-          <p className="text-sm text-slate-500">
-            Personalized marketing content generation with hallucination detection and validation
-          </p>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 mb-2">
+                LLM Dynamic Push/Email Content Enhancement Demo
+              </h1>
+              <p className="text-sm text-slate-500">
+                Personalized marketing content generation with hallucination detection and validation
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -229,36 +234,55 @@ export default function App() {
         </div>
       )}
 
-      {/* 主内容区 */}
-      <div className="max-w-4xl mx-auto px-4 py-6 md:py-8 space-y-6 md:space-y-8">
-        {/* 用户切换器 */}
-        <UserSwitcher
-          currentUser={currentUser}
-          onUserChange={handleUserChange}
-          userProfiles={userProfiles}
-        />
+      {/* 主内容区 - 侧边栏布局 */}
+      <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+          {/* 左侧主内容 */}
+          <div className="flex-1 space-y-6 md:space-y-8">
+            {/* 用户切换器 */}
+            <UserSwitcher
+              currentUser={currentUser}
+              onUserChange={handleUserChange}
+              userProfiles={userProfiles}
+            />
 
-        {/* Push 通道面板 */}
-        <ChannelPanel
-          channel="PUSH"
-          icon="📱"
-          title="Push Notification"
-          contents={pushContents}
-          loading={pushLoading}
-          onGenerate={handleGeneratePush}
-          onRegenerate={handleGeneratePush}
-        />
+            {/* Push 通道面板 */}
+            <ChannelPanel
+              channel="PUSH"
+              icon="📱"
+              title="Push Notification"
+              contents={pushContents}
+              loading={pushLoading}
+              onGenerate={handleGeneratePush}
+              onRegenerate={handleGeneratePush}
+            />
 
-        {/* Email 通道面板 */}
-        <ChannelPanel
-          channel="EMAIL"
-          icon="📧"
-          title="Email Marketing"
-          contents={emailContents}
-          loading={emailLoading}
-          onGenerate={handleGenerateEmail}
-          onRegenerate={handleGenerateEmail}
-        />
+            {/* Email 通道面板 */}
+            <ChannelPanel
+              channel="EMAIL"
+              icon="📧"
+              title="Email Marketing"
+              contents={emailContents}
+              loading={emailLoading}
+              onGenerate={handleGenerateEmail}
+              onRegenerate={handleGenerateEmail}
+            />
+          </div>
+
+          {/* 右侧边栏 - 全局状态面板 */}
+          <aside className="lg:w-80 shrink-0">
+            <div className="sticky top-6 space-y-4">
+              {/* Rate Limit Status Card */}
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-lg">⚡</span>
+                  <h3 className="text-sm font-semibold text-slate-900">API Usage</h3>
+                </div>
+                <RateLimitStatus />
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
 
       {/* 页脚 */}
