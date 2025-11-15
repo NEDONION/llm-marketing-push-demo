@@ -1,7 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import routes from './routes/index.js';
+
+// ES modules 中的 __dirname 替代
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 加载环境变量 - 从 server/.env
 dotenv.config();
@@ -36,19 +42,18 @@ app.use((req, res, next) => {
 // API 路由
 app.use('/api', routes);
 
-// 根路径
-app.get('/', (req, res) => {
-  res.json({
-    service: 'LLM Push/Email Demo API',
-    version: '1.0.0',
-    endpoints: {
-      generate: 'POST /api/generate',
-      verify: 'POST /api/verify',
-      userProfile: 'GET /api/user/:userId/profile',
-      health: 'GET /api/health'
-    },
-    documentation: 'https://github.com/your-repo'
-  });
+// 静态文件服务 - 提供前端构建文件
+const distPath = path.join(__dirname, '../../dist');
+app.use(express.static(distPath));
+
+// SPA fallback - 所有非 API 请求返回 index.html
+app.use((req, res, next) => {
+  // 如果请求不是 API 且不是静态文件，返回 index.html
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(distPath, 'index.html'));
+  } else {
+    next();
+  }
 });
 
 // 错误处理

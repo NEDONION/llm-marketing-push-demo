@@ -11,6 +11,8 @@
     "dev:all:prod": "concurrently \"npm run dev\" \"npm run dev:server:prod\"",
     "build": "tsc -b && vite build",
     "build:server": "tsc -p server/tsconfig.json",
+    "build:all": "npm run build && npm run build:server",
+    "start": "NODE_ENV=production node server/dist/index.js",
     "start:server": "NODE_ENV=production node server/dist/index.js",
     "lint": "eslint .",
     "preview": "vite preview"
