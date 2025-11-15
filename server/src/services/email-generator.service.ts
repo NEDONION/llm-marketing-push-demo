@@ -7,8 +7,9 @@ import {
     VerificationResult,
     EmailContentResponse,
     Claims,
-    Locale,
+    Locale, Candidate,
 } from '../types';
+import verificationService from "./verification.service";
 
 const MAX_BODY_LEN = 500;
 const LOCALE: Locale = 'en-US';
@@ -143,18 +144,39 @@ export const generateEmailContent = async (
     const allowedItemIds = new Set(recItemIds.map(x => x.itemId));
     const normalizedClaims = normalizeClaims(first.claims, allowedItemIds);
 
-    // 4. 简单校验（可以以后换成真实 Verifier）
-    const verification: VerificationResult = {
-        verdict: 'ALLOW',
-        scores: { fact: 0.96, compliance: 0.95, quality: 0.94 },
-        violations: [],
-        candidate: {
-            ...first,
-            claims: normalizedClaims,
-        },
+    // 构造用于校验的 candidate（带已过滤的 claims）
+    const candidateForVerify: Candidate = {
+        ...first,
+        claims: normalizedClaims,
     };
 
+    // 4. 调用真实 Verifier
+    const verifyResp = await verificationService.verify({
+        userId,
+        market: 'US',
+        now: new Date().toISOString(),
+        channel: CHANNEL,
+        locale: LOCALE,
+        constraints: {
+            maxLen: MAX_BODY_LEN,
+            noUrl: false,
+            noPrice: false,
+        },
+        candidates: [candidateForVerify],
+    });
+
+    const vr = verifyResp.results?.[0];
+
+    // 如果校验失败或被拒绝，走 fallback
+    if (!vr || vr.verdict === 'REJECT') {
+        return fallbackEmail();
+    }
+
+    const verification: VerificationResult = vr;
+
     // 5. 返回给前端（带上 meta）
+    const finalClaims = (vr.candidate?.claims ?? normalizedClaims);
+
     return {
         type: 'EMAIL',
         subject,
@@ -164,18 +186,19 @@ export const generateEmailContent = async (
         cta,
         verification,
         meta: {
-            model: first.model,
-            token: first.token,
-            referenced_item_ids: normalizedClaims.referenced_item_ids,
-            referenced_brands: normalizedClaims.referenced_brands,
-            referenced_events: normalizedClaims.referenced_events,
-            referenced_holiday: normalizedClaims.referenced_holiday,
-            mentioned_benefits: normalizedClaims.mentioned_benefits,
+            model: vr.candidate?.model || first.model,
+            token: vr.candidate?.token ?? first.token,
+            referenced_item_ids: finalClaims.referenced_item_ids,
+            referenced_brands: finalClaims.referenced_brands,
+            referenced_events: finalClaims.referenced_events,
+            referenced_holiday: finalClaims.referenced_holiday,
+            mentioned_benefits: finalClaims.mentioned_benefits,
             locale: LOCALE,
             channel: CHANNEL,
             maxLen: MAX_BODY_LEN,
         },
     };
+
 };
 
 /**

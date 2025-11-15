@@ -34,13 +34,41 @@ export class VerificationService {
    * 验证单个候选
    */
   private async verifyCandidate(
-    candidate: Candidate,
-    context: VerifyRequest
+      candidate: Candidate,
+      context: VerifyRequest
   ): Promise<VerifyResult> {
-    // 三层验证
+
+    const start = Date.now();
+
+    console.log('[VERIFY] Start verifyCandidate', {
+      channel: context.channel,
+      userId: context.userId,
+      locale: context.locale,
+      maxLen: context.constraints.maxLen,
+      noUrl: context.constraints.noUrl,
+      candidateText: candidate.text?.slice(0, 200) // 避免日志太长
+    });
+
+    // 1. 事实验证
     const factScore = await this.checkFacts(candidate, context);
+    console.log('[VERIFY] FactCheck:', {
+      score: factScore.score,
+      violations: factScore.violations
+    });
+
+    // 2. 合规验证
     const complianceScore = this.checkCompliance(candidate, context);
+    console.log('[VERIFY] Compliance:', {
+      score: complianceScore.score,
+      violations: complianceScore.violations
+    });
+
+    // 3. 质量验证
     const qualityScore = this.checkQuality(candidate, context);
+    console.log('[VERIFY] QualityCheck:', {
+      score: qualityScore.score,
+      violations: qualityScore.violations
+    });
 
     // 合并违规
     const allViolations = [
@@ -53,7 +81,27 @@ export class VerificationService {
     const verdict = this.makeVerdict(factScore, complianceScore, qualityScore);
 
     // 自动修复建议
-    const autoFix = this.suggestAutoFix(candidate, context, factScore, complianceScore, qualityScore);
+    const autoFix = this.suggestAutoFix(
+        candidate,
+        context,
+        factScore,
+        complianceScore,
+        qualityScore
+    );
+
+    const elapsed = Date.now() - start;
+
+    console.log('[VERIFY] Final result:', {
+      verdict,
+      scores: {
+        fact: factScore.score,
+        compliance: complianceScore.score,
+        quality: qualityScore.score
+      },
+      violations: allViolations,
+      autoFix: autoFix?.suggested,
+      durationMs: elapsed
+    });
 
     return {
       verdict,
@@ -72,6 +120,7 @@ export class VerificationService {
       candidate
     };
   }
+
 
   /**
    * 事实性验证
@@ -510,3 +559,4 @@ export class VerificationService {
 }
 
 export const verificationService = new VerificationService();
+export default verificationService;

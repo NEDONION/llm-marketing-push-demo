@@ -10,6 +10,7 @@ import {
     VerificationResult,
     Constraints,
 } from '../types';
+import verificationService from "./verification.service";
 
 const DEFAULT_CONSTRAINTS: Constraints = {
     maxLen: 90,
@@ -115,14 +116,21 @@ async function buildImageUrlFromClaims(claims: Claims | undefined): Promise<stri
 /**
  * Main function
  */
-export const generatePushContent = async (userId: string): Promise<PushContentResponse> => {
+export const generatePushContent = async (
+    userId: string
+): Promise<PushContentResponse> => {
+    const LOCALE = 'en-US' as const;
+    const CHANNEL: Channel = 'PUSH';
+
     // 1. Generate user signals & recommendations
     const userSignals: UserSignals = catalogService.generateUserSignals(userId);
     const recItems = await catalogService.getRecommendedItems(userId, 6);
     const recItemIds = recItems.map(it => ({ itemId: it.itemId }));
 
+    // 没有推荐商品 → 直接 fallback，完全不会调用 verify
     if (recItemIds.length === 0) {
         const text = '🔥 Check out our latest picks just for you!';
+        console.log('[PUSH] No recommended items, using fallback message');
         return {
             type: 'PUSH',
             mainText: text,
@@ -134,8 +142,8 @@ export const generatePushContent = async (userId: string): Promise<PushContentRe
                 referenced_events: [],
                 referenced_holiday: null,
                 mentioned_benefits: [],
-                locale: 'en-US',
-                channel: 'PUSH',
+                locale: LOCALE,
+                channel: CHANNEL,
                 maxLen: DEFAULT_CONSTRAINTS.maxLen,
             },
         };
@@ -144,8 +152,8 @@ export const generatePushContent = async (userId: string): Promise<PushContentRe
     // 2. Build LLM prompt
     const buildReq: PromptBuildRequest = {
         userId,
-        channel: 'PUSH' as Channel,
-        locale: 'en-US',
+        channel: CHANNEL,
+        locale: LOCALE,
         maxLen: DEFAULT_CONSTRAINTS.maxLen,
         systemPromptId: 'std-push-v1',
         items: recItemIds,
@@ -154,6 +162,10 @@ export const generatePushContent = async (userId: string): Promise<PushContentRe
     };
 
     const { prompt, generationHints } = await llmService.instance.buildPrompt(buildReq);
+    console.log('[PUSH] Prompt built', {
+        nItems: recItemIds.length,
+        nCandidatesHint: generationHints?.nCandidates,
+    });
 
     // 3. Generate content with LLM
     const n = Math.max(1, Math.min(5, generationHints?.nCandidates ?? 3));
@@ -161,7 +173,12 @@ export const generatePushContent = async (userId: string): Promise<PushContentRe
         prompt,
         n,
         returnClaims: true,
-        meta: { channel: 'PUSH', locale: 'en-US', maxLen: DEFAULT_CONSTRAINTS.maxLen },
+        meta: { channel: CHANNEL, locale: LOCALE, maxLen: DEFAULT_CONSTRAINTS.maxLen },
+    });
+
+    console.log('[PUSH] LLM generated candidates', {
+        requested: n,
+        got: genResp.candidates?.length ?? 0,
     });
 
     // 4. Select best candidate
@@ -173,6 +190,7 @@ export const generatePushContent = async (userId: string): Promise<PushContentRe
 
     if (!best) {
         const text = '🔥 Hot deals are waiting for you!';
+        console.log('[PUSH] No valid candidate after filtering, using fallback');
         return {
             type: 'PUSH',
             mainText: text,
@@ -184,20 +202,62 @@ export const generatePushContent = async (userId: string): Promise<PushContentRe
                 referenced_events: [],
                 referenced_holiday: null,
                 mentioned_benefits: [],
-                locale: 'en-US',
-                channel: 'PUSH',
+                locale: LOCALE,
+                channel: CHANNEL,
                 maxLen: DEFAULT_CONSTRAINTS.maxLen,
             },
         };
     }
 
-    // 5. Verification (stub, can connect to real verifier later)
-    const verification: VerificationResult = {
-        verdict: 'ALLOW',
-        scores: { fact: 0.97, compliance: 0.96, quality: 0.94 },
-        violations: [],
-        candidate: best,
-    };
+    // 5. Verification
+    console.log('[PUSH] Calling verificationService.verify');
+    const verifyResp = await verificationService.verify({
+        userId,
+        market: 'US',
+        now: new Date().toISOString(),
+        channel: CHANNEL,
+        locale: LOCALE,
+        constraints: {
+            maxLen: DEFAULT_CONSTRAINTS.maxLen,
+            noUrl: DEFAULT_CONSTRAINTS.noUrl,
+            noPrice: DEFAULT_CONSTRAINTS.noPrice,
+        },
+        candidates: [best],
+    });
+
+    console.log('[PUSH] verificationService.verify finished', {
+        resultCount: verifyResp.results?.length ?? 0,
+    });
+
+    const vr = verifyResp.results?.[0];
+
+    if (!vr || vr.verdict === 'REJECT') {
+        const text = '🔥 Hot deals are waiting for you!';
+        console.log('[PUSH] Verification failed or rejected, falling back', {
+            verdict: vr?.verdict,
+            violations: vr?.violations,
+        });
+        return {
+            type: 'PUSH',
+            mainText: text,
+            verification: vr || fallbackVerification(text),
+            meta: {
+                model: best.model,
+                token: best.token,
+                ...normalizeClaims(best.claims, allowedItemIds),
+                locale: LOCALE,
+                channel: CHANNEL,
+                maxLen: DEFAULT_CONSTRAINTS.maxLen,
+            },
+        };
+    }
+
+    // 验证成功
+    const verification = vr;
+    console.log('[PUSH] Verification passed', {
+        verdict: verification.verdict,
+        scores: verification.scores,
+    });
 
     // 6. Construct final push message
     const imageUrl = await buildImageUrlFromClaims(best.claims);
@@ -213,8 +273,8 @@ export const generatePushContent = async (userId: string): Promise<PushContentRe
             model: best.model,
             token: best.token,
             ...normalizeClaims(best.claims, allowedItemIds),
-            locale: 'en-US',
-            channel: 'PUSH',
+            locale: LOCALE,
+            channel: CHANNEL,
             maxLen: DEFAULT_CONSTRAINTS.maxLen,
         },
     };
