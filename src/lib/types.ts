@@ -37,7 +37,7 @@ export interface PushContentUI {
   verification: VerificationResult;
 }
 
-export interface EmailContent {
+export interface EmailContentUI {
   type: 'EMAIL';
   subject: string;
   preview: string;
@@ -47,4 +47,4 @@ export interface EmailContent {
   verification: VerificationResult;
 }
 
-export type GeneratedContent = PushContentUI | EmailContent;
+export type GeneratedContent = PushContentUI | EmailContentUI;

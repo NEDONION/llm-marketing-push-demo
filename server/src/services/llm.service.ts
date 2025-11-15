@@ -3,7 +3,6 @@ import {
   Channel,
   Locale,
   Candidate,
-  Claims,
   PromptBuildRequest,
   PromptBuildResponse,
   LLMGenerateRequest,
@@ -11,6 +10,7 @@ import {
   UserSignals
 } from '../types';
 import { catalogService } from './catalog.service';
+import {getSystemPromptByChannel} from "../prompts";
 
 /**
  * LLM 服务 - 负责 Prompt 构建和生成
@@ -36,20 +36,54 @@ export class LLMService {
 
     // 构建商品描述（包含商品 ID）
     const itemDescriptions = Array.from(itemDetails.values()).map(item =>
-      `商品ID: ${item.itemId}\n【${item.brand || ''}】${item.title} - $${item.price}`
+        `商品ID: ${item.itemId}\n【${item.brand || ''}】${item.title} - $${item.price}`
     ).join('\n\n');
 
     // 获取当前节日
     const currentHolidays = catalogService.getCurrentHolidays(locale);
     const holidayContext = currentHolidays.length > 0
-      ? `当前促销活动：${currentHolidays.map(h => h.name).join('、')}`
-      : '';
+        ? `当前促销活动：${currentHolidays.map(h => h.name).join('、')}`
+        : '';
 
     // 构建用户行为上下文
     const userContext = this.buildUserContext(userSignals);
 
-    // 根据渠道选择系统提示词
+    // 根据渠道选择系统提示词（你现在用的是 this.getSystemPrompt；之后也可以替换成外部 prompts）
     const systemPrompt = this.getSystemPrompt(channel, locale, maxLen, constraints);
+
+    // 🔹 根据渠道定义不同的 JSON 返回格式
+    const outputSchema =
+        channel === 'PUSH'
+            ? `
+Please return the information referenced in your copy in JSON format:
+{
+  "text": "Generated push copy",
+  "claims": {
+    "referenced_item_ids": ["Item ID list (must use complete Item IDs provided above, format: v1|itm|001)"],
+    "referenced_brands": ["Brand list"],
+    "referenced_events": ["Referenced user behaviors, e.g., recent_view, recent_add_to_cart"],
+    "referenced_holiday": "Holiday name or null",
+    "mentioned_benefits": ["Mentioned benefits, e.g., free shipping, discounts"]
+  }
+}
+`
+            : `
+Please return the EMAIL content in JSON format:
+{
+  "subject": "Email subject line",
+  "preview": "Short preview text shown in inbox list",
+  "body": "Main email body text (plain text, no HTML)",
+  "bullets": ["Optional bullet 1", "Optional bullet 2"],
+  "cta": "Call-to-action text, e.g. 'Shop Now'",
+  "claims": {
+    "referenced_item_ids": ["Item ID list (must use complete Item IDs provided above, format: v1|itm|001)"],
+    "referenced_brands": ["Brand list"],
+    "referenced_events": ["Referenced user behaviors, e.g., recent_view, recent_add_to_cart"],
+    "referenced_holiday": "Holiday name or null",
+    "mentioned_benefits": ["Mentioned benefits, e.g., free shipping, discounts"]
+  }
+}
+`;
 
     // 构建完整的 prompt
     const prompt = `${systemPrompt}
@@ -63,25 +97,16 @@ ${itemDescriptions}
 ${holidayContext}
 
 Please generate ${channel === 'PUSH' ? 'a short push notification' : 'a personalized marketing email'} with the following requirements:
-1. Length not exceeding ${maxLen} characters
-2. ${constraints.noUrl ? 'No URLs allowed' : ''}
-3. ${constraints.noPrice ? 'Do not display prices directly' : ''}
+1. Length not exceeding ${maxLen} characters${channel === 'EMAIL' ? ' for the email body' : ''}
+2. ${constraints.noUrl ? 'No URLs allowed' : 'URLs are allowed if needed'}
+3. ${constraints.noPrice ? 'Do not display prices directly' : 'You may mention prices if helpful'}
 4. Based on user's recent behavior (${userSignals.recent_view} views, ${userSignals.recent_add_to_cart} add-to-cart)
 5. Friendly and personalized tone that sparks user interest
 
-Please return the information referenced in your copy in JSON format:
-{
-  "text": "Generated copy",
-  "claims": {
-    "referenced_item_ids": ["Item ID list (must use complete Item IDs provided above, format: v1|itm|001)"],
-    "referenced_brands": ["Brand list"],
-    "referenced_events": ["Referenced user behaviors, e.g., recent_view, recent_add_to_cart"],
-    "referenced_holiday": "Holiday name or null",
-    "mentioned_benefits": ["Mentioned benefits, e.g., free shipping, discounts"]
-  }
-}
+${outputSchema}
 
-IMPORTANT: referenced_item_ids must use the complete Item IDs provided in 【Recommended Items】 (format: v1|itm|xxx), DO NOT use product names!`;
+IMPORTANT: referenced_item_ids must use the complete Item IDs provided in 【Recommended Items】 (format: v1|itm|xxx), DO NOT use product names!
+IMPORTANT: You MUST return ONLY a valid JSON object, no explanations or markdown.`;
 
     return {
       prompt,
@@ -92,22 +117,18 @@ IMPORTANT: referenced_item_ids must use the complete Item IDs provided in 【Rec
     };
   }
 
+
   /**
-   * 调用 LLM 生成候选文案
+   * 调用 LLM 生成候选文案（兼容 PUSH / EMAIL 两种输出 schema）
    */
   async generate(request: LLMGenerateRequest): Promise<LLMGenerateResponse> {
-    const { prompt, n, meta } = request;
+    const { prompt, n } = request;
 
     try {
       const completion = await this.openai.chat.completions.create({
-        model: 'openai/gpt-4o-mini',  // 使用 OpenRouter
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        n: n,
+        model: 'openai/gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        n,
         temperature: 0.7,
         response_format: { type: 'json_object' }
       });
@@ -121,8 +142,11 @@ IMPORTANT: referenced_item_ids must use the complete Item IDs provided in 【Rec
 
           const parsed = JSON.parse(content);
 
+          // 🔥 兼容两种结构：PUSH 与 EMAIL
           candidates.push({
-            text: parsed.text,
+            // email 会优先使用 subject/body，否则 fallback 到 text
+            text: parsed.text ?? parsed.body ?? '',
+
             claims: parsed.claims || {
               referenced_item_ids: [],
               referenced_brands: [],
@@ -130,19 +154,28 @@ IMPORTANT: referenced_item_ids must use the complete Item IDs provided in 【Rec
               referenced_holiday: null,
               mentioned_benefits: []
             },
+
             model: completion.model,
-            token: completion.usage?.total_tokens
+            token: completion.usage?.total_tokens,
+
+            // 📌 Email 独有字段
+            subject: parsed.subject,
+            preview: parsed.preview,
+            body: parsed.body,
+            bullets: parsed.bullets,
+            cta: parsed.cta
           });
+
         } catch (e) {
           console.error('Failed to parse LLM response:', e);
-          // 如果解析失败，尝试直接使用内容
           candidates.push({
-            text: choice.message.content || '',
+            text: choice.message.content ?? '',
             claims: {
               referenced_item_ids: [],
               referenced_brands: [],
               referenced_events: [],
-              referenced_holiday: null
+              referenced_holiday: null,
+              mentioned_benefits: []
             },
             model: completion.model
           });
@@ -150,11 +183,13 @@ IMPORTANT: referenced_item_ids must use the complete Item IDs provided in 【Rec
       }
 
       return { candidates };
+
     } catch (error) {
       console.error('LLM generation error:', error);
       throw new Error(`LLM generation failed: ${error}`);
     }
   }
+
 
   /**
    * 构建用户行为上下文
@@ -194,13 +229,7 @@ IMPORTANT: referenced_item_ids must use the complete Item IDs provided in 【Rec
     maxLen: number,
     constraints: any
   ): string {
-    const basePrompt = 'You are a professional e-commerce marketing copywriter, skilled at generating personalized marketing content based on user profiles and product information.';
-
-    const channelSpecific = channel === 'PUSH'
-      ? '\n\n【Push Notification Requirements】\n- Brief and to the point\n- Create urgency or curiosity\n- No URLs or links\n- Keep under 90 characters'
-      : '\n\n【Email Requirements】\n- Personalized greeting\n- Provide value and appeal\n- Can include simple structure\n- Keep under 200 characters';
-
-    return basePrompt + channelSpecific;
+    return getSystemPromptByChannel(channel, locale, maxLen, constraints);
   }
 }
 

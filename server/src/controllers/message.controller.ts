@@ -4,7 +4,8 @@ import { llmService } from '../services/llm.service';
 import { verificationService } from '../services/verification.service';
 import { catalogService } from '../services/catalog.service';
 import { rateLimiterService } from '../services/rate-limiter.service';
-import pushGeneratorService from "../services/push-generater.service";
+import pushGeneratorService from "../services/push-generator.service";
+import emailGeneratorService from "../services/email-generator.service";
 
 /**
  * 消息生成控制器
@@ -165,6 +166,31 @@ export class MessageController {
       console.error('generatePush error:', error);
       res.status(500).json({
         error: error.message || 'Failed to generate push content',
+      });
+    }
+  }
+
+  /**
+   * 只生成 Email 内容
+   * POST /api/email/generate
+   * Body: { userId: string }
+   */
+  async generateEmail(req: Request, res: Response): Promise<void> {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        res.status(400).json({ error: 'Missing required field: userId' });
+        return;
+      }
+
+      // 调用 EmailGeneratorService
+      const emailContent = await emailGeneratorService.generate(userId);
+
+      res.status(200).json(emailContent);
+    } catch (error: any) {
+      console.error('generateEmail error:', error);
+      res.status(500).json({
+        error: error.message || 'Failed to generate email content',
       });
     }
   }

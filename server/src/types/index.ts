@@ -54,7 +54,14 @@ export interface Candidate {
   claims: Claims;
   model: string;
   token?: number;
+
+  subject?: string;
+  preview?: string;
+  body?: string;
+  bullets?: string[];
+  cta?: string;
 }
+
 
 export interface PromptBuildRequest {
   userId: string;
@@ -249,4 +256,28 @@ export interface PushContentResponse {
     maxLen: number;
   };
 }
+
+export interface EmailContentResponse {
+  type: 'EMAIL';
+  subject: string;
+  preview: string;
+  body: string;
+  bullets?: string[];
+  cta?: string;
+  verification: VerificationResult;
+
+  meta: {
+    model: string;
+    token?: number;
+    referenced_item_ids: string[];
+    referenced_brands: string[];
+    referenced_events: string[];
+    referenced_holiday: string | null;
+    mentioned_benefits?: string[];
+    locale: Locale;
+    channel: Channel;
+    maxLen: number;
+  };
+}
+
 
