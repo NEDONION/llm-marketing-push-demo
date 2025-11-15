@@ -129,19 +129,17 @@ export default function UserSwitcher({ currentUser, onUserChange, userProfiles }
       )}
 
       {/* 画像标签 */}
+      {/* User behavior summary */}
       {activeProfile && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          <span className="text-xs text-slate-500 mr-1">Recent interests:</span>
-          {activeProfile.tags.map((tag, idx) => (
-            <span
-              key={idx}
-              className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+          <div className="flex flex-col gap-1 mb-4">
+            <span className="text-xs text-slate-500 mr-1">Recent behavior:</span>
+
+            <span className="text-sm text-slate-700 bg-slate-50 px-3 py-2 rounded-md border border-slate-200">
+      {activeProfile.recentSummary}
+    </span>
+          </div>
       )}
+
 
       {/* 行为历史记录 */}
       {profileData && profileData.recentEvents && profileData.recentEvents.length > 0 && (

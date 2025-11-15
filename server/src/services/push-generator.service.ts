@@ -124,9 +124,10 @@ export const generatePushContent = async (
     const CHANNEL: Channel = 'PUSH';
 
     // 1. Generate user signals & recommendations
+    // 使用智能推荐策略，限制候选数量为 5-10 个
     const { userSignals, recItemIds } = await track('catalog', async () => {
         const userSignals: UserSignals = catalogService.generateUserSignals(userId);
-        const recItems = await catalogService.getRecommendedItems(userId, 6);
+        const recItems = await catalogService.getRecommendedItems(userId, 8);
         const recItemIds = recItems.map(it => ({ itemId: it.itemId }));
         return { userSignals, recItemIds };
     });

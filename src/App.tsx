@@ -2,95 +2,47 @@ import { useState } from 'react';
 import UserSwitcher from './components/UserSwitcher';
 import ChannelPanel from './components/ChannelPanel';
 import RateLimitStatus from './components/RateLimitStatus';
-import type {UserProfile, GeneratedContent, PushContentUI, EmailContentUI} from './lib/types';
+import type {GeneratedContent, PushContentUI, EmailContentUI, UserProfile} from './lib/types';
 import type {EmailContentResponse, PushContentResponse} from "../server/src/types";
 
-// Mock 数据
 const userProfiles: UserProfile[] = [
   {
     id: 'user_001',
-    name: 'User 001 (Camera Enthusiast)',
-    tags: ['Sony A7C II', 'Sigma 35mm f/1.4', 'Peak Design Strap']
+    name: 'User 001 (Camera)',
+    recentSummary: 'Recently engaged with Sony camera gear, showing strong interest but no purchase yet.'
   },
   {
     id: 'user_002',
-    name: 'User 002 (Phone Lover)',
-    tags: ['iPhone 16 Pro', 'MagSafe Charger', 'Ugreen Cable']
+    name: 'User 002 (iPhone)',
+    recentSummary: 'Recently purchased an iPhone 15 Pro, indicating clear Apple affinity and readiness for accessories.'
+  },
+  {
+    id: 'user_003',
+    name: 'User 003 (Samsung)',
+    recentSummary: 'Recently purchased a Samsung S24, suggesting strong Samsung loyalty and accessory needs.'
+  },
+  {
+    id: 'user_004',
+    name: 'User 004 (Canon)',
+    recentSummary: 'Recently purchased a Canon R5, likely needing lenses, camera bags, and tripod accessories.'
+  },
+  {
+    id: 'user_005',
+    name: 'User 005 (Browsing Phones)',
+    recentSummary: 'Actively browsing multiple smartphones and currently in the comparison stage.'
+  },
+  {
+    id: 'user_006',
+    name: 'User 006 (Laptop)',
+    recentSummary: 'Recently purchased a MacBook Pro 16", making laptop accessories highly relevant.'
+  },
+  {
+    id: 'user_007',
+    name: 'User 007 (Headphones)',
+    recentSummary: 'Recently exploring premium headphones and comparing Sony, Bose, and AirPods Max.'
   }
 ];
 
-// Mock 生成内容函数
-// const generateMockPushContent = (userId: string): PushContentUI => {
-//   const contents: Record<string, PushContentUI> = {
-//     user_001: {
-//       type: 'PUSH',
-//       mainText: '📷 Sigma 35/1.4 Art lens — tonight 9PM flash sale stacks with cart coupons',
-//       subText: 'Perfect match for your A7C II. Free Peak Design strap bundle.',
-//       cta: 'View Deal →',
-//       verification: {
-//         verdict: 'ALLOW',
-//         scores: { fact: 0.95, compliance: 1.0, quality: 0.98 },
-//         violations: []
-//       }
-//     },
-//     user_002: {
-//       type: 'PUSH',
-//       mainText: '📱 iPhone 16 Pro MagSafe case + Ugreen 67W charger combo — 25% off ends midnight',
-//       subText: 'Based on your recent browsing. Ships same-day.',
-//       cta: 'Shop Now →',
-//       verification: {
-//         verdict: 'ALLOW',
-//         scores: { fact: 0.92, compliance: 0.95, quality: 0.96 },
-//         violations: [
-//           { code: 'COMPLIANCE_EXCESSIVE_PUNCTUATION', msg: 'Too many dashes', severity: 'WARNING' }
-//         ]
-//       }
-//     }
-//   };
-//   return contents[userId];
-// };
-
-// const generateMockEmailContent = (userId: string): EmailContentUI => {
-//   const contents: Record<string, EmailContentUI> = {
-//     user_001: {
-//       type: 'EMAIL',
-//       subject: 'Your A7C II gear bundle is ready — save 15% before midnight',
-//       preview: 'Complete your Sony setup with handpicked lenses and accessories',
-//       body: 'Hi there! We noticed you\'ve been exploring full-frame mirrorless cameras. Here\'s a curated selection based on your browsing:',
-//       bullets: [
-//         'Sigma 35mm f/1.4 Art — ★4.9/5 · Perfect for street & portrait',
-//         'Peak Design Slide Strap — Lightweight, quick-adjust · Ships free',
-//         'Sony NP-FZ100 spare battery — Extended shooting time'
-//       ],
-//       cta: 'View My Bundle →',
-//       verification: {
-//         verdict: 'ALLOW',
-//         scores: { fact: 0.98, compliance: 1.0, quality: 0.95 },
-//         violations: []
-//       }
-//     },
-//     user_002: {
-//       type: 'EMAIL',
-//       subject: 'iPhone 16 Pro accessories — MagSafe + fast charging essentials',
-//       preview: 'Upgrade your charging setup with certified MagSafe & GaN tech',
-//       body: 'We\'ve put together a power bundle tailored to your iPhone 16 Pro:',
-//       bullets: [
-//         'Apple MagSafe Charger — Official 15W wireless · ★4.8/5',
-//         'Ugreen Nexode 67W GaN — Charge 3 devices · USB-C PD certified',
-//         'Belkin 6ft Braided Cable — MFi certified · Lifetime warranty'
-//       ],
-//       cta: 'Get 20% Off Bundle →',
-//       verification: {
-//         verdict: 'REVISE',
-//         scores: { fact: 0.88, compliance: 0.85, quality: 0.92 },
-//         violations: [
-//           { code: 'FACT_USER_EVENT_MISS', msg: 'User has not purchased iPhone 16 Pro yet', severity: 'WARNING' }
-//         ]
-//       }
-//     }
-//   };
-//   return contents[userId];
-// };
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string>('user_001');

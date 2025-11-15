@@ -20,7 +20,7 @@ export interface TimingInfo {
 export interface UserProfile {
   id: string;
   name: string;
-  tags: string[];
+  recentSummary: string;
 }
 
 export interface VerificationScore {

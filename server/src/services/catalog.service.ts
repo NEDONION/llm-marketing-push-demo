@@ -1,5 +1,8 @@
 import { EbayItem, UserSignals } from '../types/index.js';
-import { mockItems, mockUserEvents, holidays, Holiday } from '../data/mock-items.js';
+import { mockItems, ExtendedEbayItem } from '../data/mock-items.js';
+import { mockUserEvents } from '../data/mock-events.js';
+import { holidays, Holiday } from '../data/mock-holidays.js';
+import { recommendationStrategyService } from './recommendation-strategy.service.js';
 
 /**
  * 商品目录服务
@@ -123,34 +126,43 @@ export class CatalogService {
   }
 
   /**
-   * 获取推荐商品（基于用户历史）
+   * 获取推荐商品（基于用户最近行为和智能策略）
+   *
+   * 新推荐策略：
+   * - purchase 设备 → 推荐配件
+   * - purchase 配件 → 推荐相关配件
+   * - view/add_to_cart → 推荐同类商品 + 配件
+   *
+   * 限制候选数量在 5-10 个之间，避免 LLM prompt 过大
    */
-  async getRecommendedItems(userId: string, limit: number = 5): Promise<EbayItem[]> {
-    const userSignals = this.generateUserSignals(userId);
-    const allItems = Object.values(mockItems).filter(item => item.isActive);
+  async getRecommendedItems(userId: string, limit: number = 10): Promise<EbayItem[]> {
+    // 模拟 API 延迟
+    await this.delay(10);
 
-    // 简单推荐算法：基于用户喜欢的品牌和分类
-    const scored = allItems.map(item => {
-      let score = 0;
+    // 使用智能推荐策略
+    const recommendations = recommendationStrategyService.getRecommendations(
+      userId,
+      Math.min(limit, 10) // 最多 10 个候选
+    );
 
-      // 品牌匹配
-      if (item.brand && userSignals.favorite_brands?.includes(item.brand)) {
-        score += 10;
-      }
+    // 如果推荐数量太少，补充一些热门商品
+    if (recommendations.length < 5) {
+      const userSignals = this.generateUserSignals(userId);
+      const fallbackItems = Object.values(mockItems)
+        .filter(item =>
+          item.isActive &&
+          !recommendations.some(r => r.itemId === item.itemId) &&
+          (item.brand && userSignals.favorite_brands?.includes(item.brand) ||
+           userSignals.tags.includes(item.category))
+        )
+        .slice(0, 5 - recommendations.length);
 
-      // 分类匹配
-      if (userSignals.tags.includes(item.category)) {
-        score += 5;
-      }
+      recommendations.push(...fallbackItems);
+    }
 
-      return { item, score };
-    });
-
-    // 按分数排序并返回
-    return scored
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit)
-      .map(s => s.item);
+    // 确保返回 5-10 个商品
+    const finalCount = Math.max(5, Math.min(recommendations.length, 10));
+    return recommendations.slice(0, finalCount);
   }
 
   private delay(ms: number): Promise<void> {
