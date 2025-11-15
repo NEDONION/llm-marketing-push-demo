@@ -5,6 +5,18 @@ export type Channel = 'PUSH' | 'EMAIL';
 
 export type Verdict = 'ALLOW' | 'REVISE' | 'REJECT';
 
+export interface TimingInfo {
+  total: number;                  // 总耗时（毫秒）
+  llm?: number;                   // LLM生成耗时（毫秒）
+  verification?: number;          // 验证服务耗时（毫秒）
+  catalog?: number;               // 目录服务耗时（毫秒）
+  breakdown?: {
+    promptBuild?: number;         // Prompt构建耗时
+    llmGenerate?: number;         // LLM调用耗时
+    [key: string]: number | undefined;
+  };
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -35,6 +47,7 @@ export interface PushContentUI {
   subText?: string;
   cta?: string;
   verification: VerificationResult;
+  timing?: TimingInfo;
 }
 
 export interface EmailContentUI {
@@ -45,6 +58,7 @@ export interface EmailContentUI {
   bullets?: string[];
   cta?: string;
   verification: VerificationResult;
+  timing?: TimingInfo;
 }
 
 export type GeneratedContent = PushContentUI | EmailContentUI;

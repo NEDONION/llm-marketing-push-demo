@@ -108,6 +108,37 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
         <VerificationBadges verification={content.verification} />
       </div>
 
+      {/* 调用链时间展示 */}
+      {content.timing && (
+        <div className="pt-3 border-t border-slate-200">
+          <div className="text-xs text-slate-500 mb-2 font-medium">Performance Metrics</div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="bg-white rounded px-2 py-1.5 border border-slate-200">
+              <div className="text-slate-500">Total</div>
+              <div className="font-semibold text-slate-900">{content.timing.total}ms</div>
+            </div>
+            {content.timing.llm !== undefined && (
+              <div className="bg-white rounded px-2 py-1.5 border border-slate-200">
+                <div className="text-slate-500">LLM</div>
+                <div className="font-semibold text-indigo-600">{content.timing.llm}ms</div>
+              </div>
+            )}
+            {content.timing.verification !== undefined && (
+              <div className="bg-white rounded px-2 py-1.5 border border-slate-200">
+                <div className="text-slate-500">Verification</div>
+                <div className="font-semibold text-green-600">{content.timing.verification}ms</div>
+              </div>
+            )}
+            {content.timing.catalog !== undefined && (
+              <div className="bg-white rounded px-2 py-1.5 border border-slate-200">
+                <div className="text-slate-500">Catalog</div>
+                <div className="font-semibold text-blue-600">{content.timing.catalog}ms</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Toast 提示 */}
       {showToast && (
         <div className="fixed top-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium animate-fade-in">

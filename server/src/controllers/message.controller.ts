@@ -6,6 +6,7 @@ import { catalogService } from '../services/catalog.service';
 import { rateLimiterService } from '../services/rate-limiter.service';
 import pushGeneratorService from "../services/push-generator.service";
 import emailGeneratorService from "../services/email-generator.service";
+import { initTimingContext, getTimingInfo } from '../utils/timing-tracker';
 
 /**
  * 消息生成控制器
@@ -25,8 +26,13 @@ export class MessageController {
         return;
       }
 
-      // 调用 PushGeneratorService
-      const pushContent = await pushGeneratorService.generate(userId);
+      // 使用时间追踪上下文包装
+      const pushContent = await initTimingContext(async () => {
+        const content = await pushGeneratorService.generate(userId);
+        // 自动添加timing信息
+        const timing = getTimingInfo();
+        return { ...content, timing };
+      });
 
       res.status(200).json(pushContent);
     } catch (error: any) {
@@ -50,8 +56,13 @@ export class MessageController {
         return;
       }
 
-      // 调用 EmailGeneratorService
-      const emailContent = await emailGeneratorService.generate(userId);
+      // 使用时间追踪上下文包装
+      const emailContent = await initTimingContext(async () => {
+        const content = await emailGeneratorService.generate(userId);
+        // 自动添加timing信息
+        const timing = getTimingInfo();
+        return { ...content, timing };
+      });
 
       res.status(200).json(emailContent);
     } catch (error: any) {

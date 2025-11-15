@@ -11,6 +11,7 @@ import {
     Constraints,
 } from '../types';
 import verificationService from "./verification.service";
+import { track } from '../utils/timing-tracker';
 
 const DEFAULT_CONSTRAINTS: Constraints = {
     maxLen: 90,
@@ -123,9 +124,12 @@ export const generatePushContent = async (
     const CHANNEL: Channel = 'PUSH';
 
     // 1. Generate user signals & recommendations
-    const userSignals: UserSignals = catalogService.generateUserSignals(userId);
-    const recItems = await catalogService.getRecommendedItems(userId, 6);
-    const recItemIds = recItems.map(it => ({ itemId: it.itemId }));
+    const { userSignals, recItemIds } = await track('catalog', async () => {
+        const userSignals: UserSignals = catalogService.generateUserSignals(userId);
+        const recItems = await catalogService.getRecommendedItems(userId, 6);
+        const recItemIds = recItems.map(it => ({ itemId: it.itemId }));
+        return { userSignals, recItemIds };
+    });
 
     // 没有推荐商品 → 直接 fallback，完全不会调用 verify
     if (recItemIds.length === 0) {
@@ -161,7 +165,9 @@ export const generatePushContent = async (
         constraints: DEFAULT_CONSTRAINTS,
     };
 
-    const { prompt, generationHints } = await llmService.instance.buildPrompt(buildReq);
+    const { prompt, generationHints } = await track('promptBuild', () =>
+        llmService.instance.buildPrompt(buildReq)
+    );
     console.log('[PUSH] Prompt built', {
         nItems: recItemIds.length,
         nCandidatesHint: generationHints?.nCandidates,
@@ -169,12 +175,14 @@ export const generatePushContent = async (
 
     // 3. Generate content with LLM
     const n = Math.max(1, Math.min(5, generationHints?.nCandidates ?? 3));
-    const genResp = await llmService.instance.generate({
-        prompt,
-        n,
-        returnClaims: true,
-        meta: { channel: CHANNEL, locale: LOCALE, maxLen: DEFAULT_CONSTRAINTS.maxLen },
-    });
+    const genResp = await track('llmGenerate', () =>
+        llmService.instance.generate({
+            prompt,
+            n,
+            returnClaims: true,
+            meta: { channel: CHANNEL, locale: LOCALE, maxLen: DEFAULT_CONSTRAINTS.maxLen },
+        })
+    );
 
     console.log('[PUSH] LLM generated candidates', {
         requested: n,
@@ -211,19 +219,21 @@ export const generatePushContent = async (
 
     // 5. Verification
     console.log('[PUSH] Calling verificationService.verify');
-    const verifyResp = await verificationService.verify({
-        userId,
-        market: 'US',
-        now: new Date().toISOString(),
-        channel: CHANNEL,
-        locale: LOCALE,
-        constraints: {
-            maxLen: DEFAULT_CONSTRAINTS.maxLen,
-            noUrl: DEFAULT_CONSTRAINTS.noUrl,
-            noPrice: DEFAULT_CONSTRAINTS.noPrice,
-        },
-        candidates: [best],
-    });
+    const verifyResp = await track('verification', () =>
+        verificationService.verify({
+            userId,
+            market: 'US',
+            now: new Date().toISOString(),
+            channel: CHANNEL,
+            locale: LOCALE,
+            constraints: {
+                maxLen: DEFAULT_CONSTRAINTS.maxLen,
+                noUrl: DEFAULT_CONSTRAINTS.noUrl,
+                noPrice: DEFAULT_CONSTRAINTS.noPrice,
+            },
+            candidates: [best],
+        })
+    );
 
     console.log('[PUSH] verificationService.verify finished', {
         resultCount: verifyResp.results?.length ?? 0,

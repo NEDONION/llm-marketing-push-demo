@@ -4,6 +4,20 @@ export type Channel = 'EMAIL' | 'PUSH';
 export type Locale = 'zh-CN' | 'en-US' | 'ja-JP';
 export type Verdict = 'ALLOW' | 'REJECT' | 'REVISE';
 
+// ========== 时间追踪相关 ==========
+
+export interface TimingInfo {
+  total: number;                  // 总耗时（毫秒）
+  llm?: number;                   // LLM生成耗时（毫秒）
+  verification?: number;          // 验证服务耗时（毫秒）
+  catalog?: number;               // 目录服务耗时（毫秒）
+  breakdown?: {
+    promptBuild?: number;         // Prompt构建耗时
+    llmGenerate?: number;         // LLM调用耗时
+    [key: string]: number | undefined;
+  };
+}
+
 // ========== 商品相关 ==========
 
 export interface EbayItem {
@@ -239,9 +253,10 @@ export interface PushContentResponse {
   type: 'PUSH';
   mainText: string;          // 主标题内容
   subText?: string;          // 可选的副标题（简短描述）
-  cta?: string;              // 行动按钮（Call-To-Action，例如“立即查看”）
+  cta?: string;              // 行动按钮（Call-To-Action，例如"立即查看"）
   imageUrl?: string;         // 展示商品图片或Banner
   verification: VerificationResult; // 审核/验证结果
+  timing?: TimingInfo;       // 调用链时间追踪
 
   meta: {
     model: string;
@@ -265,6 +280,7 @@ export interface EmailContentResponse {
   bullets?: string[];
   cta?: string;
   verification: VerificationResult;
+  timing?: TimingInfo;       // 调用链时间追踪
 
   meta: {
     model: string;

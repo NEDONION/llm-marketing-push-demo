@@ -183,6 +183,7 @@ export default function App() {
       subText: content.subText,
       cta: content.cta,
       verification: content.verification,
+      timing: content.timing,
     };
   }
 
@@ -198,6 +199,7 @@ export default function App() {
       bullets: content.bullets,
       cta: content.cta,
       verification: content.verification,
+      timing: content.timing,
     };
   }
 

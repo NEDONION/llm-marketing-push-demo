@@ -10,6 +10,7 @@ import {
     Locale, Candidate,
 } from '../types';
 import verificationService from "./verification.service";
+import { track } from '../utils/timing-tracker';
 
 const MAX_BODY_LEN = 500;
 const LOCALE: Locale = 'en-US';
@@ -83,9 +84,12 @@ export const generateEmailContent = async (
     userId: string
 ): Promise<EmailContentResponse> => {
     // 1. 用户信号 + 推荐
-    const userSignals: UserSignals = catalogService.generateUserSignals(userId);
-    const recItems = await catalogService.getRecommendedItems(userId, 6);
-    const recItemIds = recItems.map(it => ({ itemId: it.itemId }));
+    const { userSignals, recItemIds } = await track('catalog', async () => {
+        const userSignals: UserSignals = catalogService.generateUserSignals(userId);
+        const recItems = await catalogService.getRecommendedItems(userId, 6);
+        const recItemIds = recItems.map(it => ({ itemId: it.itemId }));
+        return { userSignals, recItemIds };
+    });
 
     // 2. 构建 Prompt
     const buildReq: PromptBuildRequest = {
@@ -103,21 +107,25 @@ export const generateEmailContent = async (
         },
     };
 
-    const { prompt, generationHints } = await llmService.instance.buildPrompt(buildReq);
+    const { prompt, generationHints } = await track('promptBuild', () =>
+        llmService.instance.buildPrompt(buildReq)
+    );
 
     // 3. 调用 LLM
     const n = Math.max(1, Math.min(3, generationHints?.nCandidates ?? 1));
 
-    const genResp = await llmService.instance.generate({
-        prompt,
-        n,
-        returnClaims: true,
-        meta: {
-            channel: CHANNEL,
-            locale: LOCALE,
-            maxLen: MAX_BODY_LEN,
-        },
-    });
+    const genResp = await track('llmGenerate', () =>
+        llmService.instance.generate({
+            prompt,
+            n,
+            returnClaims: true,
+            meta: {
+                channel: CHANNEL,
+                locale: LOCALE,
+                maxLen: MAX_BODY_LEN,
+            },
+        })
+    );
 
     const first = genResp.candidates?.[0];
     if (!first) {
@@ -151,19 +159,21 @@ export const generateEmailContent = async (
     };
 
     // 4. 调用真实 Verifier
-    const verifyResp = await verificationService.verify({
-        userId,
-        market: 'US',
-        now: new Date().toISOString(),
-        channel: CHANNEL,
-        locale: LOCALE,
-        constraints: {
-            maxLen: MAX_BODY_LEN,
-            noUrl: false,
-            noPrice: false,
-        },
-        candidates: [candidateForVerify],
-    });
+    const verifyResp = await track('verification', () =>
+        verificationService.verify({
+            userId,
+            market: 'US',
+            now: new Date().toISOString(),
+            channel: CHANNEL,
+            locale: LOCALE,
+            constraints: {
+                maxLen: MAX_BODY_LEN,
+                noUrl: false,
+                noPrice: false,
+            },
+            candidates: [candidateForVerify],
+        })
+    );
 
     const vr = verifyResp.results?.[0];
 
