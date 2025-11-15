@@ -1,6 +1,4 @@
 import { Request, Response } from 'express';
-import { GenerateMessageRequest, GenerateMessageResponse } from '../types';
-import { llmService } from '../services/llm.service';
 import { verificationService } from '../services/verification.service';
 import { catalogService } from '../services/catalog.service';
 import { rateLimiterService } from '../services/rate-limiter.service';
