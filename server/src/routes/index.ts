@@ -3,20 +3,6 @@ import { messageController } from '../controllers/message.controller';
 
 const router = Router();
 
-/**
- * 生成营销消息（完整流程）
- * POST /api/generate
- *
- * Body:
- * {
- *   "userId": "user_001",
- *   "channel": "PUSH" | "EMAIL",
- *   "locale": "zh-CN" (optional),
- *   "itemIds": ["v1|itm|001"] (optional)
- * }
- */
-router.post('/generate', (req, res) => messageController.generate(req, res));
-
 
 /** 🔹 新增专用 Push 生成接口 */
 router.post('/push/generate', (req, res) => messageController.generatePush(req, res));
