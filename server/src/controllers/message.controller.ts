@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { verificationService } from '../services/verification.service';
-import { catalogService } from '../services/catalog.service';
-import { rateLimiterService } from '../services/rate-limiter.service';
-import pushGeneratorService from "../services/push-generator.service";
-import emailGeneratorService from "../services/email-generator.service";
-import { initTimingContext, getTimingInfo } from '../utils/timing-tracker';
+import { verificationService } from '../services/verification.service.js';
+import { catalogService } from '../services/catalog.service.js';
+import { rateLimiterService } from '../services/rate-limiter.service.js';
+import pushGeneratorService from "../services/push-generator.service.js";
+import emailGeneratorService from "../services/email-generator.service.js";
+import { initTimingContext, getTimingInfo } from '../utils/timing-tracker.js';
 
 /**
  * 消息生成控制器

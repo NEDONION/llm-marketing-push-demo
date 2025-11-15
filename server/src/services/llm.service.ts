@@ -8,9 +8,9 @@ import {
   LLMGenerateRequest,
   LLMGenerateResponse,
   UserSignals
-} from '../types';
-import { catalogService } from './catalog.service';
-import {getSystemPromptByChannel} from "../prompts";
+} from '../types/index.js';
+import { catalogService } from './catalog.service.js';
+import {getSystemPromptByChannel} from "../prompts/index.js";
 
 /**
  * LLM 服务 - 负责 Prompt 构建和生成

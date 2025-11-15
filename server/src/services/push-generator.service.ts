@@ -1,5 +1,5 @@
-import { llmService } from './llm.service';
-import { catalogService } from './catalog.service';
+import { llmService } from './llm.service.js';
+import { catalogService } from './catalog.service.js';
 import {
     PushContentResponse,
     Candidate,
@@ -9,9 +9,9 @@ import {
     UserSignals,
     VerificationResult,
     Constraints,
-} from '../types';
-import verificationService from "./verification.service";
-import { track } from '../utils/timing-tracker';
+} from '../types/index.js';
+import verificationService from "./verification.service.js";
+import { track } from '../utils/timing-tracker.js';
 
 const DEFAULT_CONSTRAINTS: Constraints = {
     maxLen: 90,

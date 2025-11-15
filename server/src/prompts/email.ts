@@ -1,5 +1,5 @@
 // src/prompts/email.ts
-import { Constraints, Locale } from '../types';
+import { Constraints, Locale } from '../types/index.js';
 
 export function buildEmailSystemPrompt(
     locale: Locale,

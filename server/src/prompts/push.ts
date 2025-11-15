@@ -1,5 +1,5 @@
 // src/prompts/push.ts
-import { Constraints, Locale } from '../types';
+import { Constraints, Locale } from '../types/index.js';
 
 export function buildPushSystemPrompt(
     locale: Locale,

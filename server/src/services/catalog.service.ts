@@ -1,5 +1,5 @@
-import { EbayItem, UserSignals } from '../types';
-import { mockItems, mockUserEvents, holidays, Holiday } from '../data/mock-items';
+import { EbayItem, UserSignals } from '../types/index.js';
+import { mockItems, mockUserEvents, holidays, Holiday } from '../data/mock-items.js';
 
 /**
  * 商品目录服务

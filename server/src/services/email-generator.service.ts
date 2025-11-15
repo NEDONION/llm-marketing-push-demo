@@ -1,5 +1,5 @@
-import { llmService } from './llm.service';
-import { catalogService } from './catalog.service';
+import { llmService } from './llm.service.js';
+import { catalogService } from './catalog.service.js';
 import {
     Channel,
     PromptBuildRequest,
@@ -8,9 +8,9 @@ import {
     EmailContentResponse,
     Claims,
     Locale, Candidate,
-} from '../types';
-import verificationService from "./verification.service";
-import { track } from '../utils/timing-tracker';
+} from '../types/index.js';
+import verificationService from "./verification.service.js";
+import { track } from '../utils/timing-tracker.js';
 
 const MAX_BODY_LEN = 500;
 const LOCALE: Locale = 'en-US';

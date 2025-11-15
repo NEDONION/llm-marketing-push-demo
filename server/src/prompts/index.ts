@@ -1,7 +1,7 @@
 // src/prompts/index.ts
-import { buildPushSystemPrompt } from './push';
-import { buildEmailSystemPrompt } from './email';
-import { Channel, Constraints, Locale } from '../types';
+import { buildPushSystemPrompt } from './push.js';
+import { buildEmailSystemPrompt } from './email.js';
+import { Channel, Constraints, Locale } from '../types/index.js';
 
 export function getSystemPromptByChannel(
     channel: Channel,

@@ -1,4 +1,4 @@
-import { EbayItem } from '../types';
+import { EbayItem } from '../types/index.js';
 
 /**
  * eBay 模拟商品数据
