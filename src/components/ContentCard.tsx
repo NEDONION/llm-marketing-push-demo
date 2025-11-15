@@ -178,6 +178,110 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
         </div>
       )}
 
+      {/* References - 展示LLM引用的内容 */}
+      {content.meta && (
+        <div className="pt-3 border-t border-slate-200">
+          <div className="text-xs text-slate-500 mb-3 font-medium flex items-center gap-2">
+            <span>📚 References</span>
+            <span className="text-xs text-slate-400">({content.meta.model})</span>
+          </div>
+          <div className="space-y-2 text-xs">
+            {/* Referenced Items */}
+            {content.meta.referenced_item_ids.length > 0 && (
+              <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                <div className="text-slate-600 font-medium mb-2 flex items-center gap-2">
+                  <span>🏷️</span>
+                  <span>Referenced Items ({content.meta.referenced_item_ids.length})</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {content.meta.referenced_item_ids.map((itemId, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-2 py-1 rounded bg-white border border-slate-200 text-slate-600 font-mono text-xs"
+                    >
+                      {itemId}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Referenced Brands */}
+            {content.meta.referenced_brands.length > 0 && (
+              <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                <div className="text-purple-700 font-medium mb-2 flex items-center gap-2">
+                  <span>🏢</span>
+                  <span>Brands ({content.meta.referenced_brands.length})</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {content.meta.referenced_brands.map((brand, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-2 py-1 rounded bg-white border border-purple-200 text-purple-700 text-xs"
+                    >
+                      {brand}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Referenced Events */}
+            {content.meta.referenced_events.length > 0 && (
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                <div className="text-blue-700 font-medium mb-2 flex items-center gap-2">
+                  <span>📊</span>
+                  <span>User Behaviors ({content.meta.referenced_events.length})</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {content.meta.referenced_events.map((event, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-2 py-1 rounded bg-white border border-blue-200 text-blue-700 text-xs"
+                    >
+                      {event}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Referenced Holiday */}
+            {content.meta.referenced_holiday && (
+              <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
+                <div className="text-orange-700 font-medium mb-2 flex items-center gap-2">
+                  <span>🎉</span>
+                  <span>Holiday/Event</span>
+                </div>
+                <span className="inline-flex items-center px-2 py-1 rounded bg-white border border-orange-200 text-orange-700 text-xs">
+                  {content.meta.referenced_holiday}
+                </span>
+              </div>
+            )}
+
+            {/* Mentioned Benefits */}
+            {content.meta.mentioned_benefits && content.meta.mentioned_benefits.length > 0 && (
+              <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                <div className="text-green-700 font-medium mb-2 flex items-center gap-2">
+                  <span>🎁</span>
+                  <span>Benefits ({content.meta.mentioned_benefits.length})</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {content.meta.mentioned_benefits.map((benefit, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-2 py-1 rounded bg-white border border-green-200 text-green-700 text-xs"
+                    >
+                      {benefit}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Toast 提示 */}
       {showToast && (
         <div className="fixed top-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium animate-fade-in">

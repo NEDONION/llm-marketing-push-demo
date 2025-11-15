@@ -41,6 +41,16 @@ export interface VerificationResult {
   violations: Violation[];
 }
 
+export interface ContentMeta {
+  model: string;
+  token?: number;
+  referenced_item_ids: string[];
+  referenced_brands: string[];
+  referenced_events: string[];
+  referenced_holiday: string | null;
+  mentioned_benefits?: string[];
+}
+
 export interface PushContentUI {
   type: 'PUSH';
   mainText: string;
@@ -48,6 +58,7 @@ export interface PushContentUI {
   cta?: string;
   verification: VerificationResult;
   timing?: TimingInfo;
+  meta?: ContentMeta;
 }
 
 export interface EmailContentUI {
@@ -59,6 +70,7 @@ export interface EmailContentUI {
   cta?: string;
   verification: VerificationResult;
   timing?: TimingInfo;
+  meta?: ContentMeta;
 }
 
 export type GeneratedContent = PushContentUI | EmailContentUI;

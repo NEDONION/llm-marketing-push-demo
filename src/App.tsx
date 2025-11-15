@@ -184,6 +184,7 @@ export default function App() {
       cta: content.cta,
       verification: content.verification,
       timing: content.timing,
+      meta: content.meta,
     };
   }
 
@@ -200,6 +201,7 @@ export default function App() {
       cta: content.cta,
       verification: content.verification,
       timing: content.timing,
+      meta: content.meta,
     };
   }
 
