@@ -196,13 +196,13 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
             )}
 
             {/* Reference Reasons & Strength - Items */}
-            {content.meta.referenced_item_ids.length > 0 && (
+            {content.meta?.referenced_item_ids && content.meta.referenced_item_ids.length > 0 && (
               <div className="bg-slate-50 rounded p-2.5 border border-slate-200">
                 <div className="text-xs text-slate-500 mb-2">Referenced Items</div>
                 <div className="space-y-1.5">
                   {content.meta.referenced_item_ids.map((itemId) => {
-                    const reason = content.meta.reference_reasons?.referenced_item_ids?.[itemId];
-                    const strength = content.meta.reference_strength?.items?.[itemId];
+                    const reason = content.meta?.reference_reasons?.referenced_item_ids?.[itemId];
+                    const strength = content.meta?.reference_strength?.items?.[itemId];
                     return (
                       <div key={itemId} className="text-xs">
                         <div className="flex items-center justify-between mb-0.5">
@@ -230,12 +230,12 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
             )}
 
             {/* Reference Reasons - Brands */}
-            {content.meta.referenced_brands.length > 0 && (
+            {content.meta?.referenced_brands && content.meta.referenced_brands.length > 0 && (
               <div className="bg-slate-50 rounded p-2.5 border border-slate-200">
                 <div className="text-xs text-slate-500 mb-2">Referenced Brands</div>
                 <div className="space-y-1.5">
                   {content.meta.referenced_brands.map((brand) => {
-                    const reason = content.meta.reference_reasons?.referenced_brands?.[brand];
+                    const reason = content.meta?.reference_reasons?.referenced_brands?.[brand];
                     return (
                       <div key={brand} className="text-xs">
                         <div className="text-slate-700 font-medium mb-0.5">{brand}</div>
@@ -252,13 +252,13 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
             )}
 
             {/* Reference Reasons & Strength - Behaviors */}
-            {content.meta.referenced_events.length > 0 && (
+            {content.meta?.referenced_events && content.meta.referenced_events.length > 0 && (
               <div className="bg-slate-50 rounded p-2.5 border border-slate-200">
                 <div className="text-xs text-slate-500 mb-2">User Behaviors</div>
                 <div className="space-y-1.5">
                   {content.meta.referenced_events.map((event) => {
-                    const reason = content.meta.reference_reasons?.referenced_events?.[event];
-                    const strength = content.meta.reference_strength?.behaviors?.[event];
+                    const reason = content.meta?.reference_reasons?.referenced_events?.[event];
+                    const strength = content.meta?.reference_strength?.behaviors?.[event];
                     return (
                       <div key={event} className="text-xs">
                         <div className="flex items-center justify-between mb-0.5">
