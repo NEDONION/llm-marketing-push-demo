@@ -1,8 +1,8 @@
-import { EbayItem, UserSignals } from '../types/index.js';
-import { mockItems, ExtendedEbayItem } from '../data/mock-items.js';
-import { mockUserEvents } from '../data/mock-events.js';
-import { holidays, Holiday } from '../data/mock-holidays.js';
-import { recommendationStrategyService } from './recommendation-strategy.service.js';
+import { EbayItem, UserSignals } from '../../types/index.js';
+import { mockItems, ExtendedEbayItem } from '../../data/mock-items.js';
+import { mockUserEvents } from '../../data/mock-events.js';
+import { holidays, Holiday } from '../../data/mock-holidays.js';
+import { recommendationStrategyService } from '../recommendation/recommendation-strategy.service.js';
 
 /**
  * 商品目录服务

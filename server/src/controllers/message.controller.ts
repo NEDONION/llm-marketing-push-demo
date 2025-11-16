@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { verificationService } from '../services/verification.service.js';
-import { catalogService } from '../services/catalog.service.js';
-import { rateLimiterService } from '../services/rate-limiter.service.js';
-import pushGeneratorService from "../services/push-generator.service.js";
-import emailGeneratorService from "../services/email-generator.service.js";
+import { verificationService } from '../services/verification/verification.service.js';
+import { catalogService } from '../services/catalog/catalog.service.js';
+import { rateLimiterService } from '../services/rate-limiter/rate-limiter.service.js';
+import pushGeneratorService from "../services/generator/push-generator.service.js";
+import emailGeneratorService from "../services/generator/email-generator.service.js";
 import { initTimingContext, getTimingInfo } from '../utils/timing-tracker.js';
 
 /**

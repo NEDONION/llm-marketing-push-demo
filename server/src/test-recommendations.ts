@@ -3,7 +3,7 @@
  * 运行: tsx server/src/test-recommendations.ts
  */
 
-import { recommendationStrategyService, getLatestUserEvent } from './services/recommendation-strategy.service.js';
+import { recommendationStrategyService, getLatestUserEvent } from './services/recommendation/recommendation-strategy.service.js';
 import { mockUserEvents } from './data/mock-events.js';
 
 console.log('='.repeat(80));

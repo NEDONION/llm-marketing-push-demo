@@ -1,5 +1,5 @@
-import { llmService } from './llm.service.js';
-import { catalogService } from './catalog.service.js';
+import { llmService } from '../llm/llm.service.js';
+import { catalogService } from '../catalog/catalog.service.js';
 import {
     PushContentResponse,
     Candidate,
@@ -9,10 +9,10 @@ import {
     UserSignals,
     VerificationResult,
     Constraints,
-} from '../types';
-import verificationService from "./verification.service.js";
-import { track } from '../utils/timing-tracker.js';
-import { metadataBuilderService, createFallbackMetaData } from './metadata-builder.service.js';
+} from '../../types/index.js';
+import verificationService from "../verification/verification.service.js";
+import { track } from '../../utils/timing-tracker.js';
+import { metadataBuilderService, createFallbackMetaData } from '../attribution/attribution.service.js';
 
 const DEFAULT_CONSTRAINTS: Constraints = {
     maxLen: 90,

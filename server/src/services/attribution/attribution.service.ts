@@ -3,8 +3,8 @@
  * 自动填充归因信息（reference_reasons, reference_strength, inferred_intent）
  */
 
-import { ContentMetaData, Claims, UserSignals, Channel, Locale } from '../types';
-import { catalogService } from './catalog.service.js';
+import { ContentMetaData, Claims, UserSignals, Channel, Locale } from '../../types/index.js';
+import { catalogService } from '../catalog/catalog.service.js';
 
 /**
  * 构建完整的 MetaData，包括自动填充的归因信息

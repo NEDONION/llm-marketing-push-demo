@@ -9,8 +9,8 @@ import {
   QualityScore,
   AutoFix,
   Verdict
-} from '../types';
-import { catalogService } from './catalog.service.js';
+} from '../../types/index.js';
+import { catalogService } from '../catalog/catalog.service.js';
 
 /**
  * 验证服务 - 三层验证：事实性、合规性、质量
