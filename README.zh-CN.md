@@ -220,39 +220,6 @@ GET /api/user/:userId/profile
 GET /api/rate-limit/status
 ```
 
-## 🧪 测试
-
-### 推荐策略测试
-```bash
-npm run dev:server
-npx tsx server/src/test-recommendations.ts
-```
-
-**输出示例:**
-```
-用户: user_007
-  最近事件: 浏览 × 3
-  类别兴趣: { Headphones: 3 }
-  品牌兴趣: { Sony: 1, Bose: 1, Apple: 1 }
-
-推荐列表:
-  1. [device] Sony WH-1000XM5 (110 分 - 类别匹配 + 价格相似)
-  2. [device] Bose QC45 (100 分 - 类别匹配)
-  3. [device] Apple AirPods Max (30 分 - 仅品牌匹配)
-```
-
-## 🎨 前端界面
-
-React + TypeScript + TailwindCSS
-
-**功能特性:**
-- 用户切换器（7 个不同行为模式的模拟用户）
-- 双渠道标签页（推送 / 邮件）
-- 实时生成 + 加载状态
-- 验证徽章（事实/合规/质量评分）
-- 归因元数据可视化
-- 限流状态指示器
-
 ## 📊 核心算法
 
 ### 1. 行为聚合评分
@@ -285,44 +252,17 @@ const topCategory = max(categoryInterest.values())
 const primaryItem = recentEventsInCategory(topCategory)[0]
 ```
 
-## 🔒 验证规则
+## 🔒 验证机制
 
-### 事实性层
-- ✅ 价格精确度（±$0.01 容差）
-- ✅ 商品可用性检查
-- ✅ 品牌名称验证
-- ✅ 商品 ID 引用验证
-
-### 合规性层
-- ✅ 推送中禁止外部 URL（可配置）
-- ✅ 长度约束强制执行
-- ✅ 价格展示政策遵守
-- ✅ 促销合规性
-
-### 质量层
-- ✅ 语气一致性（紧迫/友好/专业）
-- ✅ 语法 & 清晰度
-- ✅ 参与度指标（CTA 存在、个性化）
-- ✅ 反垃圾邮件模式
+**事实性**: 价格/库存/品牌校验
+**合规性**: URL 策略、长度限制、促销规范
+**质量**: 语气、语法、参与度评分
 
 ## 🛠️ 技术栈
 
-### 后端
-- **运行时**: Node.js + TypeScript
-- **框架**: Express.js
-- **LLM**: OpenAI GPT-4o-mini
-- **架构**: 面向服务（6 层）
-
-### 前端
-- **框架**: React 19 + TypeScript
-- **构建工具**: Vite 7
-- **样式**: TailwindCSS 3
-- **状态**: React Hooks（本地状态）
-
-### 开发工具
-- **热重载**: tsx watch（后端）+ Vite HMR（前端）
-- **类型安全**: 全栈严格 TypeScript
-- **并发**: `concurrently` 并行开发服务器
+**后端**: Node.js, Express, TypeScript, OpenAI GPT-4o-mini
+**前端**: React 19, Vite, TailwindCSS
+**开发**: tsx watch + Vite HMR, 严格类型, concurrently
 
 ## 📂 项目结构
 

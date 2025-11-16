@@ -220,39 +220,6 @@ GET /api/user/:userId/profile
 GET /api/rate-limit/status
 ```
 
-## 🧪 Testing
-
-### Recommendation Strategy Test
-```bash
-npm run dev:server
-npx tsx server/src/test-recommendations.ts
-```
-
-**Output:**
-```
-User: user_007
-  Recent Events: view × 3
-  Category Interest: { Headphones: 3 }
-  Brand Interest: { Sony: 1, Bose: 1, Apple: 1 }
-
-Recommendations:
-  1. [device] Sony WH-1000XM5 (110 pts - category match + price similarity)
-  2. [device] Bose QC45 (100 pts - category match)
-  3. [device] Apple AirPods Max (30 pts - brand match only)
-```
-
-## 🎨 Frontend UI
-
-React + TypeScript + TailwindCSS
-
-**Features:**
-- User switcher (7 mock users with different behavior patterns)
-- Dual-channel tabs (Push / Email)
-- Real-time generation with loading states
-- Verification badges (fact/compliance/quality scores)
-- Attribution metadata visualization
-- Rate limit status indicator
-
 ## 📊 Key Algorithms
 
 ### 1. Behavior Aggregation Scoring
@@ -285,44 +252,17 @@ const topCategory = max(categoryInterest.values())
 const primaryItem = recentEventsInCategory(topCategory)[0]
 ```
 
-## 🔒 Verification Rules
+## 🔒 Verification
 
-### Factual Layer
-- ✅ Price accuracy (±$0.01 tolerance)
-- ✅ Product availability check
-- ✅ Brand name validation
-- ✅ Item ID reference verification
-
-### Compliance Layer
-- ✅ No external URLs in push (configurable)
-- ✅ Length constraints enforcement
-- ✅ Price display policy adherence
-- ✅ Promotional compliance
-
-### Quality Layer
-- ✅ Tone consistency (urgent/friendly/professional)
-- ✅ Grammar & clarity
-- ✅ Engagement metrics (CTA presence, personalization)
-- ✅ Anti-spam patterns
+**Factual**: Price/availability/brand checks against catalog
+**Compliance**: URL policy, length limits, promotional rules
+**Quality**: Tone, grammar, engagement scoring
 
 ## 🛠️ Tech Stack
 
-### Backend
-- **Runtime**: Node.js + TypeScript
-- **Framework**: Express.js
-- **LLM**: OpenAI GPT-4o-mini
-- **Architecture**: Service-oriented (6 layers)
-
-### Frontend
-- **Framework**: React 19 + TypeScript
-- **Build Tool**: Vite 7
-- **Styling**: TailwindCSS 3
-- **State**: React Hooks (local state)
-
-### Development
-- **Hot Reload**: tsx watch (backend) + Vite HMR (frontend)
-- **Type Safety**: Strict TypeScript across stack
-- **Concurrency**: `concurrently` for parallel dev servers
+**Backend**: Node.js, Express, TypeScript, OpenAI GPT-4o-mini
+**Frontend**: React 19, Vite, TailwindCSS
+**Dev**: tsx watch + Vite HMR, strict types, concurrently
 
 ## 📂 Project Structure
 
