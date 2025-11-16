@@ -9,7 +9,7 @@ import {
     UserSignals,
     VerificationResult,
     Constraints,
-} from '../types/index.js';
+} from '../types';
 import verificationService from "./verification.service.js";
 import { track } from '../utils/timing-tracker.js';
 import { metadataBuilderService } from './metadata-builder.service.js';

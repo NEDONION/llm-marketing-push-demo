@@ -182,51 +182,43 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
       {content.meta && (
         <div className="pt-3 border-t border-slate-200">
           <div className="text-xs text-slate-500 mb-3 font-medium flex items-center gap-2">
-            <span>🎯 Attribution Analysis</span>
-            <span className="text-xs text-slate-400">({content.meta.model})</span>
+            <span>Attribution Analysis</span>
+            <span className="text-slate-400">({content.meta.model})</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {/* Inferred Intent */}
             {content.meta.inferred_intent && (
-              <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
-                <div className="flex items-start gap-2">
-                  <span className="text-indigo-600 text-base">💡</span>
-                  <div className="flex-1">
-                    <div className="text-indigo-700 font-medium mb-1 text-xs">User Intent</div>
-                    <div className="text-indigo-900 text-sm font-medium">{content.meta.inferred_intent}</div>
-                  </div>
-                </div>
+              <div className="bg-slate-50 rounded p-2.5 border border-slate-200">
+                <div className="text-xs text-slate-500 mb-1">User Intent</div>
+                <div className="text-sm text-slate-900 font-medium">{content.meta.inferred_intent}</div>
               </div>
             )}
 
             {/* Reference Reasons & Strength - Items */}
             {content.meta.referenced_item_ids.length > 0 && (
-              <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                <div className="text-slate-700 font-medium mb-3 flex items-center gap-2 text-xs">
-                  <span>🏷️</span>
-                  <span>Referenced Items</span>
-                </div>
-                <div className="space-y-2">
+              <div className="bg-slate-50 rounded p-2.5 border border-slate-200">
+                <div className="text-xs text-slate-500 mb-2">Referenced Items</div>
+                <div className="space-y-1.5">
                   {content.meta.referenced_item_ids.map((itemId) => {
                     const reason = content.meta.reference_reasons?.referenced_item_ids?.[itemId];
                     const strength = content.meta.reference_strength?.items?.[itemId];
                     return (
-                      <div key={itemId} className="bg-white rounded p-2.5 border border-slate-200">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <code className="text-xs font-mono text-slate-700 font-medium">{itemId}</code>
+                      <div key={itemId} className="text-xs">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <code className="font-mono text-slate-700">{itemId}</code>
                           {strength && (
-                            <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                              strength === 'strong' ? 'bg-green-100 text-green-700' :
-                              strength === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-slate-100 text-slate-600'
+                            <span className={`text-xs font-semibold ${
+                              strength === 'strong' ? 'text-green-600' :
+                              strength === 'medium' ? 'text-amber-600' :
+                              'text-slate-500'
                             }`}>
-                              {strength === 'strong' ? '💪 Strong' : strength === 'medium' ? '👌 Medium' : '👋 Weak'}
+                              {strength}
                             </span>
                           )}
                         </div>
                         {reason && (
-                          <div className="text-xs text-slate-600 leading-relaxed">
+                          <div className="text-slate-600 leading-relaxed">
                             {reason}
                           </div>
                         )}
@@ -239,19 +231,16 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
 
             {/* Reference Reasons - Brands */}
             {content.meta.referenced_brands.length > 0 && (
-              <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
-                <div className="text-purple-700 font-medium mb-3 flex items-center gap-2 text-xs">
-                  <span>🏢</span>
-                  <span>Referenced Brands</span>
-                </div>
-                <div className="space-y-2">
+              <div className="bg-slate-50 rounded p-2.5 border border-slate-200">
+                <div className="text-xs text-slate-500 mb-2">Referenced Brands</div>
+                <div className="space-y-1.5">
                   {content.meta.referenced_brands.map((brand) => {
                     const reason = content.meta.reference_reasons?.referenced_brands?.[brand];
                     return (
-                      <div key={brand} className="bg-white rounded p-2.5 border border-purple-200">
-                        <div className="text-xs font-medium text-purple-700 mb-1">{brand}</div>
+                      <div key={brand} className="text-xs">
+                        <div className="text-slate-700 font-medium mb-0.5">{brand}</div>
                         {reason && (
-                          <div className="text-xs text-purple-600 leading-relaxed">
+                          <div className="text-slate-600 leading-relaxed">
                             {reason}
                           </div>
                         )}
@@ -264,141 +253,34 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
 
             {/* Reference Reasons & Strength - Behaviors */}
             {content.meta.referenced_events.length > 0 && (
-              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                <div className="text-blue-700 font-medium mb-3 flex items-center gap-2 text-xs">
-                  <span>📊</span>
-                  <span>User Behaviors</span>
-                </div>
-                <div className="space-y-2">
+              <div className="bg-slate-50 rounded p-2.5 border border-slate-200">
+                <div className="text-xs text-slate-500 mb-2">User Behaviors</div>
+                <div className="space-y-1.5">
                   {content.meta.referenced_events.map((event) => {
                     const reason = content.meta.reference_reasons?.referenced_events?.[event];
                     const strength = content.meta.reference_strength?.behaviors?.[event];
                     return (
-                      <div key={event} className="bg-white rounded p-2.5 border border-blue-200">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-medium text-blue-700">{event}</span>
+                      <div key={event} className="text-xs">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-slate-700 font-medium">{event}</span>
                           {strength && (
-                            <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                              strength === 'strong' ? 'bg-green-100 text-green-700' :
-                              strength === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-slate-100 text-slate-600'
+                            <span className={`text-xs font-semibold ${
+                              strength === 'strong' ? 'text-green-600' :
+                              strength === 'medium' ? 'text-amber-600' :
+                              'text-slate-500'
                             }`}>
-                              {strength === 'strong' ? '💪 Strong' : strength === 'medium' ? '👌 Medium' : '👋 Weak'}
+                              {strength}
                             </span>
                           )}
                         </div>
                         {reason && (
-                          <div className="text-xs text-blue-600 leading-relaxed">
+                          <div className="text-slate-600 leading-relaxed">
                             {reason}
                           </div>
                         )}
                       </div>
                     );
                   })}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* References - 展示LLM引用的内容 */}
-      {content.meta && (
-        <div className="pt-3 border-t border-slate-200">
-          <div className="text-xs text-slate-500 mb-3 font-medium flex items-center gap-2">
-            <span>📚 Basic References</span>
-            <span className="text-xs text-slate-400">(Legacy View)</span>
-          </div>
-          <div className="space-y-2 text-xs">
-            {/* Referenced Items */}
-            {content.meta.referenced_item_ids.length > 0 && (
-              <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                <div className="text-slate-600 font-medium mb-2 flex items-center gap-2">
-                  <span>🏷️</span>
-                  <span>Referenced Items ({content.meta.referenced_item_ids.length})</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {content.meta.referenced_item_ids.map((itemId, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center px-2 py-1 rounded bg-white border border-slate-200 text-slate-600 font-mono text-xs"
-                    >
-                      {itemId}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Referenced Brands */}
-            {content.meta.referenced_brands.length > 0 && (
-              <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
-                <div className="text-purple-700 font-medium mb-2 flex items-center gap-2">
-                  <span>🏢</span>
-                  <span>Brands ({content.meta.referenced_brands.length})</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {content.meta.referenced_brands.map((brand, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center px-2 py-1 rounded bg-white border border-purple-200 text-purple-700 text-xs"
-                    >
-                      {brand}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Referenced Events */}
-            {content.meta.referenced_events.length > 0 && (
-              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                <div className="text-blue-700 font-medium mb-2 flex items-center gap-2">
-                  <span>📊</span>
-                  <span>User Behaviors ({content.meta.referenced_events.length})</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {content.meta.referenced_events.map((event, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center px-2 py-1 rounded bg-white border border-blue-200 text-blue-700 text-xs"
-                    >
-                      {event}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Referenced Holiday */}
-            {content.meta.referenced_holiday && (
-              <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
-                <div className="text-orange-700 font-medium mb-2 flex items-center gap-2">
-                  <span>🎉</span>
-                  <span>Holiday/Event</span>
-                </div>
-                <span className="inline-flex items-center px-2 py-1 rounded bg-white border border-orange-200 text-orange-700 text-xs">
-                  {content.meta.referenced_holiday}
-                </span>
-              </div>
-            )}
-
-            {/* Mentioned Benefits */}
-            {content.meta.mentioned_benefits && content.meta.mentioned_benefits.length > 0 && (
-              <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                <div className="text-green-700 font-medium mb-2 flex items-center gap-2">
-                  <span>🎁</span>
-                  <span>Benefits ({content.meta.mentioned_benefits.length})</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {content.meta.mentioned_benefits.map((benefit, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center px-2 py-1 rounded bg-white border border-green-200 text-green-700 text-xs"
-                    >
-                      {benefit}
-                    </span>
-                  ))}
                 </div>
               </div>
             )}

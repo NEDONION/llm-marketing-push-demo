@@ -9,7 +9,7 @@ import {
   QualityScore,
   AutoFix,
   Verdict
-} from '../types/index.js';
+} from '../types';
 import { catalogService } from './catalog.service.js';
 
 /**

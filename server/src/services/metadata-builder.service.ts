@@ -3,7 +3,7 @@
  * 自动填充归因信息（reference_reasons, reference_strength, inferred_intent）
  */
 
-import { ContentMetaData, Claims, UserSignals, Channel, Locale } from '../types/index.js';
+import { ContentMetaData, Claims, UserSignals, Channel, Locale } from '../types';
 import { catalogService } from './catalog.service.js';
 
 /**
@@ -88,7 +88,7 @@ async function analyzeItemReference(
   // 获取商品信息
   const item = await catalogService.getItem(itemId);
   if (!item) {
-    return { reason: '推荐商品', strength: 'weak' };
+    return { reason: 'Recommended item', strength: 'weak' };
   }
 
   // 检查用户是否浏览过
@@ -99,28 +99,28 @@ async function analyzeItemReference(
   // 根据用户行为强度判断
   if (purchaseCount > 0) {
     return {
-      reason: `用户购买过 ${item.title}`,
+      reason: `User purchased ${item.title}`,
       strength: 'strong',
     };
   }
 
   if (addToCartCount > 0) {
     return {
-      reason: `用户将 ${item.title} 加入购物车`,
+      reason: `User added ${item.title} to cart`,
       strength: 'strong',
     };
   }
 
   if (viewCount >= 3) {
     return {
-      reason: `用户多次浏览过 ${item.title}（${viewCount}次）`,
+      reason: `User viewed ${item.title} multiple times (${viewCount}x)`,
       strength: 'medium',
     };
   }
 
   if (viewCount > 0) {
     return {
-      reason: `用户浏览过 ${item.title}`,
+      reason: `User viewed ${item.title}`,
       strength: 'medium',
     };
   }
@@ -128,13 +128,13 @@ async function analyzeItemReference(
   // 检查品牌匹配
   if (item.brand && userSignals.favorite_brands?.includes(item.brand)) {
     return {
-      reason: `${item.brand} 是用户喜欢的品牌`,
+      reason: `${item.brand} is user's favorite brand`,
       strength: 'medium',
     };
   }
 
   return {
-    reason: `根据推荐算法推荐`,
+    reason: 'Recommended by algorithm',
     strength: 'weak',
   };
 }
@@ -144,14 +144,14 @@ async function analyzeItemReference(
  */
 function analyzeBrandReference(brand: string, userSignals: UserSignals): string {
   if (userSignals.favorite_brands?.includes(brand)) {
-    return `${brand} 是用户偏好的品牌`;
+    return `${brand} is user's preferred brand`;
   }
 
   if (userSignals.recent_purchase > 0) {
-    return `用户曾购买过 ${brand} 的商品`;
+    return `User previously purchased ${brand} products`;
   }
 
-  return `${brand} 品牌推荐`;
+  return `${brand} brand recommendation`;
 }
 
 /**
@@ -166,12 +166,12 @@ function analyzeEventReference(
       const viewCount = userSignals.recent_view || 0;
       if (viewCount >= 5) {
         return {
-          reason: `用户频繁浏览商品（${viewCount}次）`,
+          reason: `User frequently viewed items (${viewCount}x)`,
           strength: 'strong',
         };
       }
       return {
-        reason: `用户浏览了商品`,
+        reason: 'User viewed items',
         strength: 'medium',
       };
 
@@ -179,12 +179,12 @@ function analyzeEventReference(
       const cartCount = userSignals.recent_add_to_cart || 0;
       if (cartCount > 0) {
         return {
-          reason: `用户将商品加入购物车（${cartCount}个）`,
+          reason: `User added items to cart (${cartCount} items)`,
           strength: 'strong',
         };
       }
       return {
-        reason: `用户有加购行为`,
+        reason: 'User has add-to-cart behavior',
         strength: 'medium',
       };
 
@@ -192,18 +192,18 @@ function analyzeEventReference(
       const purchaseCount = userSignals.recent_purchase || 0;
       if (purchaseCount > 0) {
         return {
-          reason: `用户购买了商品（${purchaseCount}个）`,
+          reason: `User purchased items (${purchaseCount} items)`,
           strength: 'strong',
         };
       }
       return {
-        reason: `用户有购买意向`,
+        reason: 'User has purchase intent',
         strength: 'medium',
       };
 
     default:
       return {
-        reason: `用户行为：${event}`,
+        reason: `User behavior: ${event}`,
         strength: 'weak',
       };
   }
@@ -218,30 +218,30 @@ function inferUserIntent(userSignals: UserSignals, meta: ContentMetaData): strin
   // 根据购买行为推断
   if (recent_purchase > 0) {
     if (meta.referenced_brands.length > 0) {
-      return `复购 ${meta.referenced_brands[0]} 品牌商品`;
+      return `Repurchase ${meta.referenced_brands[0]} brand products`;
     }
-    return '继续购买相关商品';
+    return 'Continue purchasing related items';
   }
 
   // 根据加购行为推断
   if (recent_add_to_cart > 0) {
-    return '完成购物车中的商品购买';
+    return 'Complete cart purchase';
   }
 
   // 根据浏览行为推断
   if (recent_view >= 5) {
     if (tags && tags.length > 0) {
-      return `购买 ${tags[0]} 相关商品`;
+      return `Purchase ${tags[0]} related items`;
     }
-    return '购买浏览过的商品';
+    return 'Purchase viewed items';
   }
 
   if (recent_view > 0) {
-    return '探索感兴趣的商品';
+    return 'Explore items of interest';
   }
 
   // 新用户或无明显行为
-  return '发现新商品';
+  return 'Discover new items';
 }
 
 export const metadataBuilderService = {
