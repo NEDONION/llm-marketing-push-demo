@@ -11,6 +11,7 @@ import {
 } from '../types/index.js';
 import verificationService from "./verification.service.js";
 import { track } from '../utils/timing-tracker.js';
+import { metadataBuilderService, createFallbackMetaData } from './metadata-builder.service.js';
 
 const MAX_BODY_LEN = 500;
 const LOCALE: Locale = 'en-US';
@@ -63,17 +64,12 @@ function fallbackEmail(): EmailContentResponse {
                 model: 'fallback',
             },
         },
-        meta: {
+        meta: createFallbackMetaData({
             model: 'fallback',
-            referenced_item_ids: [],
-            referenced_brands: [],
-            referenced_events: [],
-            referenced_holiday: null,
-            mentioned_benefits: [],
             locale: LOCALE,
             channel: CHANNEL,
             maxLen: MAX_BODY_LEN,
-        },
+        }),
     };
 }
 
@@ -187,6 +183,18 @@ export const generateEmailContent = async (
     // 5. 返回给前端（带上 meta）
     const finalClaims = (vr.candidate?.claims ?? normalizedClaims);
 
+    // 构建完整的 meta，包括自动填充的归因信息
+    const meta = await metadataBuilderService.buildMetaData({
+        model: vr.candidate?.model || first.model,
+        token: vr.candidate?.token ?? first.token,
+        locale: LOCALE,
+        channel: CHANNEL,
+        maxLen: MAX_BODY_LEN,
+        claims: finalClaims,
+        userSignals,
+        userId,
+    });
+
     return {
         type: 'EMAIL',
         subject,
@@ -195,18 +203,7 @@ export const generateEmailContent = async (
         bullets,
         cta,
         verification,
-        meta: {
-            model: vr.candidate?.model || first.model,
-            token: vr.candidate?.token ?? first.token,
-            referenced_item_ids: finalClaims.referenced_item_ids,
-            referenced_brands: finalClaims.referenced_brands,
-            referenced_events: finalClaims.referenced_events,
-            referenced_holiday: finalClaims.referenced_holiday,
-            mentioned_benefits: finalClaims.mentioned_benefits,
-            locale: LOCALE,
-            channel: CHANNEL,
-            maxLen: MAX_BODY_LEN,
-        },
+        meta,
     };
 
 };

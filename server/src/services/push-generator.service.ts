@@ -12,7 +12,7 @@ import {
 } from '../types';
 import verificationService from "./verification.service.js";
 import { track } from '../utils/timing-tracker.js';
-import { metadataBuilderService } from './metadata-builder.service.js';
+import { metadataBuilderService, createFallbackMetaData } from './metadata-builder.service.js';
 
 const DEFAULT_CONSTRAINTS: Constraints = {
     maxLen: 90,
@@ -141,17 +141,12 @@ export const generatePushContent = async (
             type: 'PUSH',
             mainText: text,
             verification: fallbackVerification(text),
-            meta: {
+            meta: createFallbackMetaData({
                 model: 'fallback',
-                referenced_item_ids: [],
-                referenced_brands: [],
-                referenced_events: [],
-                referenced_holiday: null,
-                mentioned_benefits: [],
                 locale: LOCALE,
                 channel: CHANNEL,
                 maxLen: DEFAULT_CONSTRAINTS.maxLen,
-            },
+            }),
         };
     }
 
@@ -205,17 +200,12 @@ export const generatePushContent = async (
             type: 'PUSH',
             mainText: text,
             verification: fallbackVerification(text),
-            meta: {
+            meta: createFallbackMetaData({
                 model: 'fallback',
-                referenced_item_ids: [],
-                referenced_brands: [],
-                referenced_events: [],
-                referenced_holiday: null,
-                mentioned_benefits: [],
                 locale: LOCALE,
                 channel: CHANNEL,
                 maxLen: DEFAULT_CONSTRAINTS.maxLen,
-            },
+            }),
         };
     }
 
@@ -249,18 +239,24 @@ export const generatePushContent = async (
             verdict: vr?.verdict,
             violations: vr?.violations,
         });
+
+        // 构建 meta，包含归因信息
+        const meta = await metadataBuilderService.buildMetaData({
+            model: best.model,
+            token: best.token,
+            locale: LOCALE,
+            channel: CHANNEL,
+            maxLen: DEFAULT_CONSTRAINTS.maxLen,
+            claims: normalizeClaims(best.claims, allowedItemIds),
+            userSignals,
+            userId,
+        });
+
         return {
             type: 'PUSH',
             mainText: text,
             verification: vr || fallbackVerification(text),
-            meta: {
-                model: best.model,
-                token: best.token,
-                ...normalizeClaims(best.claims, allowedItemIds),
-                locale: LOCALE,
-                channel: CHANNEL,
-                maxLen: DEFAULT_CONSTRAINTS.maxLen,
-            },
+            meta,
         };
     }
 

@@ -244,6 +244,48 @@ function inferUserIntent(userSignals: UserSignals, meta: ContentMetaData): strin
   return 'Discover new items';
 }
 
+/**
+ * 创建 Fallback MetaData（用于没有推荐或验证失败的情况）
+ */
+export function createFallbackMetaData(params: {
+  model: string;
+  locale: Locale;
+  channel: Channel;
+  maxLen: number;
+  token?: number;
+}): ContentMetaData {
+  return {
+    model: params.model,
+    token: params.token,
+    locale: params.locale,
+    channel: params.channel,
+    maxLen: params.maxLen,
+
+    // 空的引用信息
+    referenced_item_ids: [],
+    referenced_brands: [],
+    referenced_events: [],
+    referenced_holiday: null,
+    referenced_categories: [],
+    mentioned_benefits: [],
+
+    // 空的归因信息
+    reference_reasons: {
+      referenced_item_ids: {},
+      referenced_events: {},
+      referenced_brands: {},
+    },
+
+    reference_strength: {
+      items: {},
+      behaviors: {},
+    },
+
+    inferred_intent: 'unknown',
+  };
+}
+
 export const metadataBuilderService = {
   buildMetaData,
+  createFallbackMetaData,
 };
