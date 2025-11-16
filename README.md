@@ -4,7 +4,7 @@
 
 > **Production-grade** LLM-powered push notification and email content generation system with **three-layer verification**, **cross-channel consistency**, and **behavior-driven recommendation engine**.
 
-## 🎯 Core Features
+## Core Features
 
 ### 1. **Dual-Channel Content Generation**
 - **Push Notifications**: Ultra-concise, high-CTR copy (≤90 chars)
@@ -65,7 +65,7 @@ metadata: {
 - Production: 10 requests/day with automatic midnight reset
 - Development: Unlimited
 
-## 🏗️ Architecture
+## Architecture
 
 ### Service Layer
 ```
@@ -143,7 +143,7 @@ npm run build:all
 npm run start
 ```
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Generate Push Notification
 ```http
@@ -220,7 +220,7 @@ GET /api/user/:userId/profile
 GET /api/rate-limit/status
 ```
 
-## 📊 Key Algorithms
+## Key Algorithms
 
 ### 1. Behavior Aggregation Scoring
 ```typescript
@@ -252,19 +252,14 @@ const topCategory = max(categoryInterest.values())
 const primaryItem = recentEventsInCategory(topCategory)[0]
 ```
 
-## 🔒 Verification
+## Verification
 
 **Factual**: Price/availability/brand checks against catalog
 **Compliance**: URL policy, length limits, promotional rules
 **Quality**: Tone, grammar, engagement scoring
 
-## 🛠️ Tech Stack
 
-**Backend**: Node.js, Express, TypeScript, OpenAI GPT-4o-mini
-**Frontend**: React 19, Vite, TailwindCSS
-**Dev**: tsx watch + Vite HMR, strict types, concurrently
-
-## 📂 Project Structure
+## Project Structure
 
 ```
 llm-push-demo/

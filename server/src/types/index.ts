@@ -35,6 +35,31 @@ export interface EbayItem {
   };
 }
 
+export interface EbayBrowseItem {
+  itemId: string;
+  title: string;
+  price: {
+    value: string;
+    currency: string;
+  };
+  categories?: { categoryId: string; categoryName: string }[];
+  image?: { imageUrl: string };
+  thumbnailImages?: { imageUrl: string }[];
+  shippingOptions?: {
+    shippingCostType?: string;
+    shippingCost?: { value: string; currency: string };
+    minEstimatedDeliveryDate?: string;
+    maxEstimatedDeliveryDate?: string;
+  }[];
+  seller?: { username?: string };
+  marketingPrice?: {
+    originalPrice?: { value: string; currency: string };
+    discountPercentage?: string;
+  };
+  itemWebUrl?: string;
+}
+
+
 // ========== 用户相关 ==========
 
 export interface UserSignals {
