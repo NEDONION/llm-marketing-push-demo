@@ -176,7 +176,7 @@ function analyzeEventReference(
         strength: 'medium',
       }; }
 
-    case 'add_to_cart':
+    case 'recent_add_to_cart':
       { const cartCount = userSignals.recent_add_to_cart || 0;
       if (cartCount > 0) {
         return {
@@ -189,7 +189,7 @@ function analyzeEventReference(
         strength: 'medium',
       }; }
 
-    case 'purchase':
+    case 'recent_purchase':
       { const purchaseCount = userSignals.recent_purchase || 0;
       if (purchaseCount > 0) {
         return {
