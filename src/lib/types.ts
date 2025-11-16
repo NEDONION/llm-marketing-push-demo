@@ -41,14 +41,37 @@ export interface VerificationResult {
   violations: Violation[];
 }
 
+// ========== MetaData 相关 ==========
+
+/**
+ * 内容元数据（与后端同步）
+ */
 export interface ContentMeta {
   model: string;
   token?: number;
+  locale: 'zh-CN' | 'en-US' | 'ja-JP';
+  channel: Channel;
+  maxLen: number;
+
   referenced_item_ids: string[];
   referenced_brands: string[];
   referenced_events: string[];
   referenced_holiday: string | null;
+  referenced_categories?: string[];
   mentioned_benefits?: string[];
+
+  reference_reasons: {
+    referenced_item_ids: Record<string, string>;
+    referenced_events: Record<string, string>;
+    referenced_brands: Record<string, string>;
+  };
+
+  reference_strength: {
+    items: Record<string, 'strong' | 'medium' | 'weak'>;
+    behaviors: Record<string, 'strong' | 'medium' | 'weak'>;
+  };
+
+  inferred_intent: string;
 }
 
 export interface PushContentUI {

@@ -63,6 +63,46 @@ export interface Claims {
   mentioned_benefits?: string[];  // 提到的优惠/权益
 }
 
+// ========== MetaData 相关 ==========
+
+/**
+ * 内容元数据
+ * 包含内容生成的所有元信息、引用关系、推断结果等
+ * 归因部分（reference_reasons, reference_strength, inferred_intent）会在后端自动填充
+ */
+export interface ContentMetaData {
+  // 基础信息
+  model: string;
+  token?: number;
+  locale: Locale;
+  channel: Channel;
+  maxLen: number;
+
+  // 引用信息
+  referenced_item_ids: string[];
+  referenced_brands: string[];
+  referenced_events: string[];
+  referenced_holiday: string | null;
+  referenced_categories?: string[];
+  mentioned_benefits?: string[];
+
+  // 引用原因（后端自动填充）
+  reference_reasons: {
+    referenced_item_ids: Record<string, string>;
+    referenced_events: Record<string, string>;
+    referenced_brands: Record<string, string>;
+  };
+
+  // 引用强度（后端自动填充）
+  reference_strength: {
+    items: Record<string, 'strong' | 'medium' | 'weak'>;
+    behaviors: Record<string, 'strong' | 'medium' | 'weak'>;
+  };
+
+  // 意图推断（后端自动填充）
+  inferred_intent: string;
+}
+
 export interface Candidate {
   text: string;
   claims: Claims;
@@ -257,21 +297,12 @@ export interface PushContentResponse {
   imageUrl?: string;         // 展示商品图片或Banner
   verification: VerificationResult; // 审核/验证结果
   timing?: TimingInfo;       // 调用链时间追踪
-
-  meta: {
-    model: string;
-    token?: number;
-    referenced_item_ids: string[];
-    referenced_brands: string[];
-    referenced_events: string[];
-    referenced_holiday: string | null;
-    mentioned_benefits?: string[];
-    locale: Locale;
-    channel: Channel;
-    maxLen: number;
-  };
+  meta: ContentMetaData;     // 使用独立的MetaData类型
 }
 
+/**
+ * Email 内容结构（后端版本，与前端类型兼容）
+ */
 export interface EmailContentResponse {
   type: 'EMAIL';
   subject: string;
@@ -281,19 +312,7 @@ export interface EmailContentResponse {
   cta?: string;
   verification: VerificationResult;
   timing?: TimingInfo;       // 调用链时间追踪
-
-  meta: {
-    model: string;
-    token?: number;
-    referenced_item_ids: string[];
-    referenced_brands: string[];
-    referenced_events: string[];
-    referenced_holiday: string | null;
-    mentioned_benefits?: string[];
-    locale: Locale;
-    channel: Channel;
-    maxLen: number;
-  };
+  meta: ContentMetaData;     // 使用独立的MetaData类型
 }
 
 

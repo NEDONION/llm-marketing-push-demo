@@ -12,6 +12,7 @@ import {
 } from '../types/index.js';
 import verificationService from "./verification.service.js";
 import { track } from '../utils/timing-tracker.js';
+import { metadataBuilderService } from './metadata-builder.service.js';
 
 const DEFAULT_CONSTRAINTS: Constraints = {
     maxLen: 90,
@@ -273,6 +274,18 @@ export const generatePushContent = async (
     // 6. Construct final push message
     const imageUrl = await buildImageUrlFromClaims(best.claims);
 
+    // 构建完整的 meta，包括自动填充的归因信息
+    const meta = await metadataBuilderService.buildMetaData({
+        model: best.model,
+        token: best.token,
+        locale: LOCALE,
+        channel: CHANNEL,
+        maxLen: DEFAULT_CONSTRAINTS.maxLen,
+        claims: normalizeClaims(best.claims, allowedItemIds),
+        userSignals,
+        userId,
+    });
+
     return {
         type: 'PUSH',
         mainText: best.text,
@@ -280,14 +293,7 @@ export const generatePushContent = async (
         cta: 'Shop Now',
         imageUrl,
         verification,
-        meta: {
-            model: best.model,
-            token: best.token,
-            ...normalizeClaims(best.claims, allowedItemIds),
-            locale: LOCALE,
-            channel: CHANNEL,
-            maxLen: DEFAULT_CONSTRAINTS.maxLen,
-        },
+        meta,
     };
 };
 

@@ -178,12 +178,136 @@ export default function ContentCard({ content, onRegenerate }: ContentCardProps)
         </div>
       )}
 
+      {/* Attribution Analysis - 归因分析 */}
+      {content.meta && (
+        <div className="pt-3 border-t border-slate-200">
+          <div className="text-xs text-slate-500 mb-3 font-medium flex items-center gap-2">
+            <span>🎯 Attribution Analysis</span>
+            <span className="text-xs text-slate-400">({content.meta.model})</span>
+          </div>
+
+          <div className="space-y-3">
+            {/* Inferred Intent */}
+            {content.meta.inferred_intent && (
+              <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
+                <div className="flex items-start gap-2">
+                  <span className="text-indigo-600 text-base">💡</span>
+                  <div className="flex-1">
+                    <div className="text-indigo-700 font-medium mb-1 text-xs">User Intent</div>
+                    <div className="text-indigo-900 text-sm font-medium">{content.meta.inferred_intent}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Reference Reasons & Strength - Items */}
+            {content.meta.referenced_item_ids.length > 0 && (
+              <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                <div className="text-slate-700 font-medium mb-3 flex items-center gap-2 text-xs">
+                  <span>🏷️</span>
+                  <span>Referenced Items</span>
+                </div>
+                <div className="space-y-2">
+                  {content.meta.referenced_item_ids.map((itemId) => {
+                    const reason = content.meta.reference_reasons?.referenced_item_ids?.[itemId];
+                    const strength = content.meta.reference_strength?.items?.[itemId];
+                    return (
+                      <div key={itemId} className="bg-white rounded p-2.5 border border-slate-200">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <code className="text-xs font-mono text-slate-700 font-medium">{itemId}</code>
+                          {strength && (
+                            <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+                              strength === 'strong' ? 'bg-green-100 text-green-700' :
+                              strength === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-slate-100 text-slate-600'
+                            }`}>
+                              {strength === 'strong' ? '💪 Strong' : strength === 'medium' ? '👌 Medium' : '👋 Weak'}
+                            </span>
+                          )}
+                        </div>
+                        {reason && (
+                          <div className="text-xs text-slate-600 leading-relaxed">
+                            {reason}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Reference Reasons - Brands */}
+            {content.meta.referenced_brands.length > 0 && (
+              <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                <div className="text-purple-700 font-medium mb-3 flex items-center gap-2 text-xs">
+                  <span>🏢</span>
+                  <span>Referenced Brands</span>
+                </div>
+                <div className="space-y-2">
+                  {content.meta.referenced_brands.map((brand) => {
+                    const reason = content.meta.reference_reasons?.referenced_brands?.[brand];
+                    return (
+                      <div key={brand} className="bg-white rounded p-2.5 border border-purple-200">
+                        <div className="text-xs font-medium text-purple-700 mb-1">{brand}</div>
+                        {reason && (
+                          <div className="text-xs text-purple-600 leading-relaxed">
+                            {reason}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Reference Reasons & Strength - Behaviors */}
+            {content.meta.referenced_events.length > 0 && (
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                <div className="text-blue-700 font-medium mb-3 flex items-center gap-2 text-xs">
+                  <span>📊</span>
+                  <span>User Behaviors</span>
+                </div>
+                <div className="space-y-2">
+                  {content.meta.referenced_events.map((event) => {
+                    const reason = content.meta.reference_reasons?.referenced_events?.[event];
+                    const strength = content.meta.reference_strength?.behaviors?.[event];
+                    return (
+                      <div key={event} className="bg-white rounded p-2.5 border border-blue-200">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-medium text-blue-700">{event}</span>
+                          {strength && (
+                            <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+                              strength === 'strong' ? 'bg-green-100 text-green-700' :
+                              strength === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-slate-100 text-slate-600'
+                            }`}>
+                              {strength === 'strong' ? '💪 Strong' : strength === 'medium' ? '👌 Medium' : '👋 Weak'}
+                            </span>
+                          )}
+                        </div>
+                        {reason && (
+                          <div className="text-xs text-blue-600 leading-relaxed">
+                            {reason}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* References - 展示LLM引用的内容 */}
       {content.meta && (
         <div className="pt-3 border-t border-slate-200">
           <div className="text-xs text-slate-500 mb-3 font-medium flex items-center gap-2">
-            <span>📚 References</span>
-            <span className="text-xs text-slate-400">({content.meta.model})</span>
+            <span>📚 Basic References</span>
+            <span className="text-xs text-slate-400">(Legacy View)</span>
           </div>
           <div className="space-y-2 text-xs">
             {/* Referenced Items */}
