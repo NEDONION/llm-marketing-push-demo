@@ -1,73 +1,342 @@
-# React + TypeScript + Vite
+# LLM-Driven Marketing Content Generator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[中文文档](./README.zh-CN.md) | English
 
-Currently, two official plugins are available:
+> **Production-grade** LLM-powered push notification and email content generation system with **three-layer verification**, **cross-channel consistency**, and **behavior-driven recommendation engine**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🎯 Core Features
 
-## React Compiler
+### 1. **Dual-Channel Content Generation**
+- **Push Notifications**: Ultra-concise, high-CTR copy (≤90 chars)
+- **Marketing Emails**: Structured content with subject/preview/body/bullets/CTA
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
+### 2. **Three-Layer Verification System**
+```typescript
+verification: {
+  factual: {        // Claims validation against catalog
+    priceCheck, availabilityCheck, brandCheck
   },
-])
+  compliance: {     // Regulatory & policy adherence
+    urlPolicy, priceDisplayPolicy, lengthConstraints
+  },
+  quality: {        // Content quality metrics
+    clarity, tone, engagement, grammar
+  }
+}
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 3. **Cross-Channel Consistency Protocol**
+- **Primary Item Strategy**: Recommended items list prioritizes PRIMARY item (first position)
+- **Push**: 100% focus on primary item only
+- **Email**: Explicit primary item reference in subject/opening + optional 1-3 secondary items
+- **Behavioral Signals**: `recent_view`, `recent_add_to_cart`, `recent_purchase`, `favorite_brands`, `tags` influence tone, not item selection
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 4. **Intelligent Recommendation Engine**
+```typescript
+// User Behavior Aggregation
+getUserBehaviorPattern(userId) → {
+  primaryEvent: purchase > add_to_cart > view,  // Priority cascade
+  categoryInterest: Map<category, viewCount>,   // Aggregate analysis
+  brandInterest: Map<brand, viewCount>,
+  viewedItemIds: Set<itemId>                    // Deduplication
+}
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
+// Smart Deduplication Strategy
+- Browsing behavior: Allow same-category viewed items (comparison intent)
+- Purchase/cart behavior: Filter all viewed items (discovery intent)
+```
+
+### 5. **Attribution & Metadata Tracking**
+```typescript
+metadata: {
+  referenced_item_ids: string[],
+  reference_reasons: {
+    "item_001": "Recommended based on user's Sony purchase history"
   },
-])
+  reference_strength: {
+    items: { "item_001": "strong" },
+    behaviors: { "recent_purchase": "strong" }
+  },
+  inferred_intent: "Buy accessories for camera"
+}
+```
+
+### 6. **Rate Limiting**
+- Production: 10 requests/day with automatic midnight reset
+- Development: Unlimited
+
+## 🏗️ Architecture
+
+### Service Layer
+```
+server/src/services/
+├── catalog/              # Product catalog & user events
+│   ├── catalog.service.ts
+│   └── recommendation/   # Behavior-driven recommendation
+│       └── recommendation-strategy.service.ts
+├── llm/                  # OpenAI integration & prompt building
+│   └── llm.service.ts
+├── generator/            # Content generation orchestration
+│   ├── push-generator.service.ts
+│   └── email-generator.service.ts
+├── verification/         # Three-layer verification
+│   └── verification.service.ts
+├── attribution/          # Metadata & attribution tracking
+│   └── attribution.service.ts
+└── rate-limiter/         # API rate limiting
+    └── rate-limiter.service.ts
+```
+
+### Data Flow
+```
+User Action
+  ↓
+Catalog Service (getUserSignals + getRecommendedItems)
+  ↓
+Recommendation Engine (behavior aggregation + scoring)
+  ↓
+LLM Service (prompt building + generation)
+  ↓
+Verification Service (factual + compliance + quality)
+  ↓
+Attribution Service (metadata enrichment)
+  ↓
+Final Content Response
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js ≥ 20
+- OpenAI API Key
+
+### Installation
+```bash
+npm install
+```
+
+### Environment Setup
+```bash
+# .env
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_BASE_URL=https://api.openai.com/v1  # Optional
+```
+
+### Development
+```bash
+# Frontend + Backend (recommended)
+npm run dev:all
+
+# Frontend only
+npm run dev
+
+# Backend only
+npm run dev:server
+
+# Production mode (rate limiting enabled)
+npm run dev:all:prod
+```
+
+### Production Build
+```bash
+npm run build:all
+npm run start
+```
+
+## 📡 API Endpoints
+
+### Generate Push Notification
+```http
+POST /api/push/generate
+Content-Type: application/json
+
+{
+  "userId": "user_007"
+}
+```
+
+**Response:**
+```json
+{
+  "type": "PUSH",
+  "mainText": "Sony WH-1000XM5 - Industry-leading noise cancellation awaits",
+  "subText": "Your favorites are waiting 🎁",
+  "cta": "Shop Now",
+  "imageUrl": "https://...",
+  "verification": {
+    "verdict": "ALLOW",
+    "scores": {
+      "fact": 1.0,
+      "compliance": 1.0,
+      "quality": 0.95
+    }
+  },
+  "meta": {
+    "model": "openai/gpt-4o-mini",
+    "token": 1250,
+    "referenced_item_ids": ["v1|itm|headphone_sony_xm5"],
+    "reference_reasons": {
+      "v1|itm|headphone_sony_xm5": "User browsed Headphones category 3 times"
+    },
+    "inferred_intent": "Purchase viewed items"
+  }
+}
+```
+
+### Generate Email
+```http
+POST /api/email/generate
+Content-Type: application/json
+
+{
+  "userId": "user_002"
+}
+```
+
+**Response:**
+```json
+{
+  "type": "EMAIL",
+  "subject": "Complete Your iPhone 15 Pro Max Setup",
+  "preview": "Essential accessories for your new device",
+  "body": "Maximize your iPhone 15 Pro Max experience...",
+  "bullets": [
+    "MagSafe compatible chargers",
+    "Premium protective cases"
+  ],
+  "cta": "Shop Accessories",
+  "verification": { /* ... */ },
+  "meta": { /* ... */ }
+}
+```
+
+### Get User Profile
+```http
+GET /api/user/:userId/profile
+```
+
+### Rate Limit Status
+```http
+GET /api/rate-limit/status
+```
+
+## 🧪 Testing
+
+### Recommendation Strategy Test
+```bash
+npm run dev:server
+npx tsx server/src/test-recommendations.ts
+```
+
+**Output:**
+```
+User: user_007
+  Recent Events: view × 3
+  Category Interest: { Headphones: 3 }
+  Brand Interest: { Sony: 1, Bose: 1, Apple: 1 }
+
+Recommendations:
+  1. [device] Sony WH-1000XM5 (110 pts - category match + price similarity)
+  2. [device] Bose QC45 (100 pts - category match)
+  3. [device] Apple AirPods Max (30 pts - brand match only)
+```
+
+## 🎨 Frontend UI
+
+React + TypeScript + TailwindCSS
+
+**Features:**
+- User switcher (7 mock users with different behavior patterns)
+- Dual-channel tabs (Push / Email)
+- Real-time generation with loading states
+- Verification badges (fact/compliance/quality scores)
+- Attribution metadata visualization
+- Rate limit status indicator
+
+## 📊 Key Algorithms
+
+### 1. Behavior Aggregation Scoring
+```typescript
+// Device Scoring for Browse Intent
+score = 0
+  + (category_match ? 100 : 0)    // Highest priority
+  + (brand_match ? 30 : 0)        // Secondary
+  + (price_similar ? 10 : 0)      // Tertiary
+```
+
+### 2. Recommendation Strategy
+```typescript
+if (event === 'purchase' && itemType === 'device') {
+  return recommendAccessories(device)  // Only accessories
+}
+else if (event === 'view') {
+  return [
+    ...sameCategoryDevices(60%),      // Category-first scoring
+    ...accessories(40%)
+  ]
+}
+```
+
+### 3. Primary Item Selection
+```typescript
+// Priority: purchase > add_to_cart > view
+// For view-only: Select from most-viewed category
+const topCategory = max(categoryInterest.values())
+const primaryItem = recentEventsInCategory(topCategory)[0]
+```
+
+## 🔒 Verification Rules
+
+### Factual Layer
+- ✅ Price accuracy (±$0.01 tolerance)
+- ✅ Product availability check
+- ✅ Brand name validation
+- ✅ Item ID reference verification
+
+### Compliance Layer
+- ✅ No external URLs in push (configurable)
+- ✅ Length constraints enforcement
+- ✅ Price display policy adherence
+- ✅ Promotional compliance
+
+### Quality Layer
+- ✅ Tone consistency (urgent/friendly/professional)
+- ✅ Grammar & clarity
+- ✅ Engagement metrics (CTA presence, personalization)
+- ✅ Anti-spam patterns
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Runtime**: Node.js + TypeScript
+- **Framework**: Express.js
+- **LLM**: OpenAI GPT-4o-mini
+- **Architecture**: Service-oriented (6 layers)
+
+### Frontend
+- **Framework**: React 19 + TypeScript
+- **Build Tool**: Vite 7
+- **Styling**: TailwindCSS 3
+- **State**: React Hooks (local state)
+
+### Development
+- **Hot Reload**: tsx watch (backend) + Vite HMR (frontend)
+- **Type Safety**: Strict TypeScript across stack
+- **Concurrency**: `concurrently` for parallel dev servers
+
+## 📂 Project Structure
+
+```
+llm-push-demo/
+├── server/
+│   └── src/
+│       ├── controllers/      # Route handlers
+│       ├── services/         # Business logic (6 services)
+│       ├── prompts/          # LLM system prompts (push/email)
+│       ├── data/             # Mock catalog & user events
+│       ├── types/            # TypeScript interfaces
+│       └── utils/            # Timing tracker, helpers
+├── src/                      # Frontend React app
+├── public/                   # Static assets
+└── package.json             # Monorepo dependencies
 ```
